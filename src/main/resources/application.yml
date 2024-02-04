@@ -1,0 +1,23 @@
+
+bot:
+  name: botUsername
+  token: botToken
+
+spring:
+  datasource:
+    url: databaseUrl
+    username: databaseUsername
+    password: databasePassword
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
