@@ -114,7 +114,7 @@ public class UserService {
         UserDTO dto = getById(callBackData.getFrom().getId()); // user ni get qilish
         EditMessageText editMessageText = new EditMessageText();// editMsg object olish
         editMessageText.setMessageId(callBackData.getMessage().getMessageId());
-        editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + dto.getBotId() + "\n\n\uD83D\uDCDC Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+        editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + dto.getBotId() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
         editMessageText.setChatId(dto.getTgId());
         editMessageText.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());//editMsg ga tasdiqlash button ni set qilish
         return editMessageText;

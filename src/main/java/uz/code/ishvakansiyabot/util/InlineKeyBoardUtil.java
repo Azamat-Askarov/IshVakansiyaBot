@@ -18,7 +18,7 @@ public class InlineKeyBoardUtil {
     }
 
     static String[] toshkentArr = {"Toshkent.sh", "Toshkent.t", "Chirchiq.sh", "Quyi Chirchiq.t", "O'rta Chirchiq.t", "Yuqori Chirchiq.t", "Ohangaron.sh", "Ohangaron.t", "Bekobod.sh", "Bekobod.t", "Yangiyo'l.sh", "Yangiyo'l.t", "Angren.sh", "Bo'ka.t", "Bostonliq.t", "Olmaliq.sh", "Nurafshon.sh", "Qibray.t", "Oqqo'rg'on.t", "Parkent.t", "Piskent.t", "Zangiota.t", "Chinoz.t"};
-    static String[] fargonaArr = {"Toshkent.sh", "Toshkent.t", "Chirchiq.sh", "Quyi Chirchiq.t", "O'rta Chirchiq.t", "Yuqori Chirchiq.t", "Ohangaron.sh", "Ohangaron.t", "Bekobod.sh", "Bekobod.t", "Yangiyo'l.sh", "Yangiyo'l.t", "Angren.sh", "Bo'ka.t", "Bostonliq.t", "Olmaliq.sh", "Nurafshon.sh", "Qibray.t", "Oqqo'rg'on.t", "Parkent.t", "Piskent.t", "Zangiota.t", "Chinoz.t"};
+    static String[] fargonaArr = {"Farg'ona.sh", "Farg'ona.t", "Qo'qon.sh","Marg'ilon.sh","Quvasoy.sh","Uchko'prik.t", "Oltiariq.t", "Beshariq.t", "O'zbekiston.t", "Bog'dod.t", "Buvayda.t", "Dang'ara.t", "Furqat.t", "Qo'shtepa.t", "Quva.t", "Rishton.t", "So'x.t", "Toshloq.t", "Yozyovon.t"};
     static String[] andijonArr = {"Toshkent.sh", "Toshkent.t", "Chirchiq.sh", "Quyi Chirchiq.t", "O'rta Chirchiq.t", "Yuqori Chirchiq.t", "Ohangaron.sh", "Ohangaron.t", "Bekobod.sh", "Bekobod.t", "Yangiyo'l.sh", "Yangiyo'l.t", "Angren.sh", "Bo'ka.t", "Bostonliq.t", "Olmaliq.sh", "Nurafshon.sh", "Qibray.t", "Oqqo'rg'on.t", "Parkent.t", "Piskent.t", "Zangiota.t", "Chinoz.t"};
     static String[] namanganArr = {"Toshkent.sh", "Toshkent.t", "Chirchiq.sh", "Quyi Chirchiq.t", "O'rta Chirchiq.t", "Yuqori Chirchiq.t", "Ohangaron.sh", "Ohangaron.t", "Bekobod.sh", "Bekobod.t", "Yangiyo'l.sh", "Yangiyo'l.t", "Angren.sh", "Bo'ka.t", "Bostonliq.t", "Olmaliq.sh", "Nurafshon.sh", "Qibray.t", "Oqqo'rg'on.t", "Parkent.t", "Piskent.t", "Zangiota.t", "Chinoz.t"};
     static String[] sirdaryoArr = {"Toshkent.sh", "Toshkent.t", "Chirchiq.sh", "Quyi Chirchiq.t", "O'rta Chirchiq.t", "Yuqori Chirchiq.t", "Ohangaron.sh", "Ohangaron.t", "Bekobod.sh", "Bekobod.t", "Yangiyo'l.sh", "Yangiyo'l.t", "Angren.sh", "Bo'ka.t", "Bostonliq.t", "Olmaliq.sh", "Nurafshon.sh", "Qibray.t", "Oqqo'rg'on.t", "Parkent.t", "Piskent.t", "Zangiota.t", "Chinoz.t"};
@@ -40,7 +40,7 @@ public class InlineKeyBoardUtil {
                                 "Qoraqalpog'iston")),
                         InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Andijon", "Andijon"),
                                 InlineKeyboardButtonUtil.button("Buxoro", "Buxoro")),
-                        InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Farg'ona", "Fargona"),
+                        InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Farg'ona", "Farg'ona"),
                                 InlineKeyboardButtonUtil.button("Jizzax", "Jizzax")),
                         InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Namangan", "Namangan"),
                                 InlineKeyboardButtonUtil.button("Navoiy", "Navoiy")),

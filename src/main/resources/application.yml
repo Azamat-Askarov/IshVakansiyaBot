@@ -5,9 +5,9 @@ bot:
 
 spring:
   datasource:
-    url: databaseUrl
-    username: databaseUsername
-    password: databasePassword
+    url: dataBaseUrl
+    username: dataBaseUrl
+    password: dataBasePassword
     driver-class-name: org.postgresql.Driver
 
   jpa:

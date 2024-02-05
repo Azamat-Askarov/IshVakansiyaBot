@@ -50,25 +50,24 @@ public class MainController extends TelegramLongPollingBot {
                 if (vacancyService.currentVacancy.get(currentUser.getTgId()).getEmployerName() == null) {
                     /** set employerName and show regions */
                     sendMsg(vacancyService.setEmployerName(message));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getPosition() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getPosition() == null) {
                     /**  set position and show "enter workTime" msg */
                     sendMsg(vacancyService.setPosition(message));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkTime() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkTime() == null) {
                     /**  set setWorkTime and enter salary msg */
                     sendMsg(vacancyService.setWorkTime(message));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getSalary() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getSalary() == null) {
                     /** set salary and show call link msg */
                     sendMsg(vacancyService.setSalary(message));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getConnectAddress() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getConnectAddress() == null) {
                     /** set call link and show extra info msg */
                     sendMsg(vacancyService.setConnectAddress(message));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getExtraInfo() == null){
-                    /** set extra info to vacancy ent accepting create vacancy */
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getExtraInfo() == null) {
+                    /** set extra info to vacancy ent accepting set vacancy to DataBase */
                     sendMsg(vacancyService.acceptingVacancy(message));
                 }
             }
-        }
-        else if (update.hasCallbackQuery()) {
+        } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             User user = callbackQuery.getFrom();
             UserDTO currentUser = userService.getById(user.getId());
@@ -87,12 +86,10 @@ public class MainController extends TelegramLongPollingBot {
                     /** show aboutBot and make signUp button */
                     sendEditMsg(userService.sendAboutBotMsg(callbackQuery));
                 }
-            }
-            else if (currentUser.getAddress() == null) {
+            } else if (currentUser.getAddress() == null) {
                 /** set user's region and show total fields and accepting buttons */
                 sendEditMsg(userService.setAddress(callbackQuery)); // viloyat set qilish
-            }
-            else if (currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
+            } else if (currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
                 /** new user fields accepting or noAccepting */
                 sendEditMsg(userService.acceptNewUser(callbackQuery));
                 /** accepted qilgan bo'lsa */
@@ -103,25 +100,25 @@ public class MainController extends TelegramLongPollingBot {
                     msg.setReplyMarkup(userService.mainMenuButtons());
                     sendMsg(msg);
                 }
-            }
-            else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
+            } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
                 if (vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkRegion() == null) {
                     /** set vacancy region and show districts buttons */
                     sendEditMsg(vacancyService.setVacancyRegion(update.getCallbackQuery()));
                 } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkDistinct() == null) {
-                    /** set distinct and show specialty buttons */
+                    /** set distinct and show specialty1 buttons */
                     sendEditMsg(vacancyService.setVacancyDistinct(update.getCallbackQuery()));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty1() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty1() == null) {
                     /**  set specialty1 and show specialty2 buttons */
                     sendEditMsg(vacancyService.setSpecialty1(update.getCallbackQuery()));
-                }else if(vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty2() == null){
+                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty2() == null) {
                     /**  set specialty2 and "enter position msg" */
                     sendEditMsg(vacancyService.setSpecialty2(update.getCallbackQuery()));
                 }
-            }
-            else if(currentUser.getTgId().equals(UserStep.ACCEPTING_VACANCY)){
-                if(callbackQuery.getData().equals("tasdiqlash")){
-                    vacancyService.save(CallbackQuery);
+            } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
+                if (callbackQuery.getData().equals("tasdiqlash")) {
+                    sendEditMsg(vacancyService.save(callbackQuery));
+                } else if (callbackQuery.getData().equals("tahrirlash")) {
+                    vacancyService.editVacancy(callbackQuery);
                 }
             }
         }
