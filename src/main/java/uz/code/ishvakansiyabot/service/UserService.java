@@ -36,9 +36,11 @@ public class UserService {
     }
 
     public void create(Long id) {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setTgId(id);
-        userRepository.save(userEntity);
+        if (userRepository.findByTgId(id) == null) {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setTgId(id);
+            userRepository.save(userEntity);
+        }
     }
 
     public void update(UserDTO dto) {
@@ -77,7 +79,7 @@ public class UserService {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(tgId);
         if (text.contains("0") || text.contains("1") || text.contains("2") || text.contains("3") || text.contains("4") || text.contains("5") || text.contains("6") || text.contains("7") || text.contains("8") || text.contains("9")) {
-            sendMessage.setText("⚠\uFE0F Raqam ishlatmang.\n" + "✍\uD83C\uDFFB Ismingiz . .");
+            sendMessage.setText("⚠\uFE0F Raqamlardan foydalanmang.\n\n✍\uD83C\uDFFB Ismingiz . .");
         } else if (text.length() < 3 || text.length() > 16) {
             sendMessage.setText("⚠\uFE0F Ism uzunligi [3 ; 16] oraliqda bo'lsin\n✍\uD83C\uDFFB Ismingiz . .");
         } else {
@@ -124,7 +126,7 @@ public class UserService {
         EditMessageText editMsg = new EditMessageText(); // make eccept (editMsg)button
         UserDTO currentUser = getById(callbackQuery.getFrom().getId()); // get currentUser
 
-        if (callbackQuery.getData().equals("tasdiqlash")) {
+        if (callbackQuery.getData().equals("accept")) {
             currentUser.setStep(UserStep.END);
             currentUser.setStatus(GeneralStatus.ACTIVE);
             currentUser.setCreatedDate(LocalDateTime.now());
@@ -132,7 +134,7 @@ public class UserService {
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
             editMsg.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Ro'yxatdan o'tgan vaqt : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
-        } else if (callbackQuery.getData().equals("tahrirlash")) {
+        } else if (callbackQuery.getData().equals("edit")) {
             currentUser.setName(null);
             currentUser.setAge(null);
             currentUser.setAddress(null);
@@ -141,6 +143,18 @@ public class UserService {
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
             editMsg.setText("\uD83D\uDD30 Ro'yxatdan o'tish \uD83D\uDD30\n✍\uD83C\uDFFB Ismingiz . .");
+        } else if (callbackQuery.getData().equals("cancel")) {
+            /** delete user from DB */
+            UserDTO dto = getById(callbackQuery.getFrom().getId());
+            dto.setStatus(GeneralStatus.DELETED);
+            dto.setName(null);
+            dto.setAge(null);
+            dto.setAddress(null);
+            update(dto);
+            /** sendEditMsg */
+            editMsg.setChatId(currentUser.getTgId());
+            editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
+            editMsg.setText("❌  Royxatdan o'tish bekor qilindi.");
         }
         return editMsg;
     }

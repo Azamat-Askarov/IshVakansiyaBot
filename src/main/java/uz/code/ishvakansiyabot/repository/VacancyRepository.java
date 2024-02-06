@@ -5,7 +5,7 @@ import uz.code.ishvakansiyabot.entity.VacancyEntity;
 
 import java.util.Optional;
 
-public interface VacancyRepository extends CrudRepository<VacancyEntity,Integer> {
+public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer> {
     Optional<VacancyEntity> findById(Integer id);
 
 }

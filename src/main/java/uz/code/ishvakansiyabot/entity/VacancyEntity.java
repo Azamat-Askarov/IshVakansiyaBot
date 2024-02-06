@@ -6,6 +6,7 @@ import lombok.Data;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 
 import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "vacancy")

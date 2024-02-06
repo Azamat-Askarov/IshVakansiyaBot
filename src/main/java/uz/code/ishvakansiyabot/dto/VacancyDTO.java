@@ -4,6 +4,7 @@ import lombok.Data;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 
 import java.time.LocalDateTime;
+
 @Data
 public class VacancyDTO {
     private Integer id;
