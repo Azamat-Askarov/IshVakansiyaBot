@@ -12,10 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.code.ishvakansiyabot.config.BotConfig;
+import uz.code.ishvakansiyabot.dto.ResumeDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
+import uz.code.ishvakansiyabot.service.ResumeService;
 import uz.code.ishvakansiyabot.service.UserService;
 import uz.code.ishvakansiyabot.service.VacancyService;
 
@@ -27,6 +29,8 @@ public class MainController extends TelegramLongPollingBot {
     UserService userService;
     @Autowired
     VacancyService vacancyService;
+    @Autowired
+    ResumeService resumeService;
 
     @SneakyThrows
     @Override
@@ -68,6 +72,30 @@ public class MainController extends TelegramLongPollingBot {
                 } else if (vacancyDTO.getExtraInfo() == null) {
                     /** set extra info to vacancy ent accepting set vacancy to DataBase */
                     sendMsg(vacancyService.acceptingVacancy(message));
+                }
+            } else if (message.getText().equals("Rezyume joylashㅤ")) {
+                sendMsg(resumeService.create(currentUser.getTgId()));
+            } else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
+                /**  get current resume */
+                ResumeDTO resumeDTO = resumeService.currentResume.get(currentUser.getTgId());
+                if (resumeDTO.getEmployeeName() == null) {
+                    /** set employeeName and show regions */
+                    sendMsg(resumeService.setEmployeeName(message));
+                } else if (resumeDTO.getTechnologies() == null) {
+                    /**  set technologies and show "enter workTime" msg */
+                    sendMsg(resumeService.setTechnologies(message));
+                } else if (resumeDTO.getWorkTime() == null) {
+                    /**  set setWorkTime and enter salary msg */
+                    sendMsg(resumeService.setWorkTime(message));
+                } else if (resumeDTO.getSalary() == null) {
+                    /** set salary and show call link msg */
+                    sendMsg(resumeService.setSalary(message));
+                } else if (resumeDTO.getConnectAddress() == null) {
+                    /** set call link and show extra info msg */
+                    sendMsg(resumeService.setConnectAddress(message));
+                } else if (resumeDTO.getExtraInfo() == null) {
+                    /** set extra info to vacancy ent accepting set vacancy to DataBase */
+                    sendMsg(resumeService.acceptingResume(message));
                 }
             }
         } else if (update.hasCallbackQuery()) {
@@ -126,6 +154,11 @@ public class MainController extends TelegramLongPollingBot {
             } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
                 if (callbackQuery.getData().equals("accept")) {
                     sendEditMsg(vacancyService.save(callbackQuery));
+                    SendMessage msg = new SendMessage();
+                    msg.setText("✅ Vakansiya tizimga yuklandi va kiritilgan yo'nalish bo'yicha ish izlayotgan foydalanuvchilarga uzatildi.");
+                    msg.setChatId(currentUser.getTgId());
+                    msg.setReplyMarkup(userService.mainMenuButtons());
+                    sendMsg(msg);
                 } else if (callbackQuery.getData().equals("edit")) {
                     sendEditMsg(vacancyService.editVacancyButtons(callbackQuery));
                 } else if (callbackQuery.getData().equals("cancel")) {
@@ -133,6 +166,35 @@ public class MainController extends TelegramLongPollingBot {
                 }
             } else if (currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
                 sendEditMsg(vacancyService.editVacancy(callbackQuery));
+            } else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
+                if (resumeService.currentResume.get(currentUser.getTgId()).getWorkRegion() == null) {
+                    /** set resume region and show districts buttons */
+                    sendEditMsg(resumeService.setResumeRegion(update.getCallbackQuery()));
+                } else if (resumeService.currentResume.get(currentUser.getTgId()).getWorkDistinct() == null) {
+                    /** set distinct and show specialty1 buttons */
+                    sendEditMsg(resumeService.setResumeDistinct(update.getCallbackQuery()));
+                } else if (resumeService.currentResume.get(currentUser.getTgId()).getSpecialty1() == null) {
+                    /**  set specialty1 and show specialty2 buttons */
+                    sendEditMsg(resumeService.setSpecialty1(update.getCallbackQuery()));
+                } else if (resumeService.currentResume.get(currentUser.getTgId()).getSpecialty2() == null) {
+                    /**  set specialty2 and "enter position msg" */
+                    sendEditMsg(resumeService.setSpecialty2(update.getCallbackQuery()));
+                }
+            } else if (currentUser.getStep().equals(UserStep.ACCEPTING_RESUME)) {
+                if (callbackQuery.getData().equals("accept")) {
+                    sendEditMsg(resumeService.save(callbackQuery));
+                    SendMessage msg = new SendMessage();
+                    msg.setText("✅ Rezyume tizimga yuklandi va kiritilgan yo'nalish bo'yicha barcha ish beruvchilarga uzatildi.");
+                    msg.setChatId(currentUser.getTgId());
+                    msg.setReplyMarkup(userService.mainMenuButtons());
+                    sendMsg(msg);
+                } else if (callbackQuery.getData().equals("edit")) {
+                    sendEditMsg(resumeService.editResumeButtons(callbackQuery));
+                } else if (callbackQuery.getData().equals("cancel")) {
+                    sendEditMsg(resumeService.cancelResume(callbackQuery));
+                }
+            } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
+                sendEditMsg(resumeService.editResume(callbackQuery));
             }
         }
     }
