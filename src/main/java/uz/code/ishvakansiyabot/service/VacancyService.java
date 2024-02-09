@@ -10,14 +10,15 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
+import uz.code.ishvakansiyabot.entity.UserEntity;
 import uz.code.ishvakansiyabot.entity.VacancyEntity;
+import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
 import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
+import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class VacancyService {
@@ -48,27 +49,48 @@ public class VacancyService {
         return sendMessage;
     }
 
-    public VacancyDTO getById(Integer id) {
-        Optional<VacancyEntity> optional = vacancyRepository.findById(id);
+    public EditMessageText getById(CallbackQuery callbackQuery) {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        //..............................................//
+        Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(15));
+        /**  get vacancyEntity from DB */
+        Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
         VacancyEntity entity = optional.get();
-        if (entity == null) {
-            return null;
+        if (callbackQuery.getData().startsWith("showMoreVacancy")) {
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + entity.getPosition() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Vakansiyani o'chirish", "deletingVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "showLessVacancy" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("showLessVacancy")) {
+            /**  get created date */
+            String date = String.valueOf(entity.getCreatedDate());
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreVacancy" + entity.getId())))));
         }
-        VacancyDTO dto = new VacancyDTO();
-        dto.setId(entity.getId());
-        dto.setEmployerId(entity.getEmployerId());
-        dto.setEmployerName(entity.getEmployerName());
-        dto.setStatus(entity.getStatus());
-        dto.setCreatedDate(entity.getCreatedDate());
-        dto.setSpecialty1(entity.getSpecialty1());
-        dto.setSpecialty2(entity.getSpecialty2());
-        dto.setPosition(entity.getPosition());
-        dto.setSalary(entity.getSalary());
-        dto.setWorkRegion(entity.getWorkRegion());
-        dto.setWorkDistinct(entity.getWorkDistinct());
-        dto.setConnectAddress(entity.getConnectAddress());
-        dto.setExtraInfo(entity.getExtraInfo());
-        return dto;
+        return editMessageText;
+    }
+
+    public List<SendMessage> getMyVacancies(Long userId) {
+        List<VacancyEntity> vacancyEntityList = vacancyRepository.findByEmployerIdAndStatus(userId, GeneralStatus.ACTIVE);
+        List<SendMessage> vacancyMsgList = new LinkedList<>();
+        VacancyEntity entity;
+        String date;
+        for (int i = 0; i < vacancyEntityList.size(); i++) {
+            entity = vacancyEntityList.get(i);
+            date = String.valueOf(entity.getCreatedDate());
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(userId);
+            sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreVacancy" + entity.getId())))));
+            vacancyMsgList.add(sendMessage);
+        }
+        if (vacancyMsgList.isEmpty()) {
+            SendMessage send = new SendMessage();
+            send.setChatId(userId);
+            send.setText("Sizda vakansiyalar mavjud emas !");
+            vacancyMsgList.add(send);
+        }
+        return vacancyMsgList;
     }
 
     public SendMessage setEmployerName(Message message) {
@@ -279,39 +301,6 @@ public class VacancyService {
         return sendMessage;
     }
 
-    public synchronized EditMessageText save(CallbackQuery callbackQuery) {
-        /** change user's step */
-        UserDTO user = userService.getById(callbackQuery.getFrom().getId());
-        user.setStep(UserStep.END);
-        userService.update(user);
-        /**  get currentVacancy to DTO */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
-        /**  create vacancyEntity */
-        VacancyEntity entity = new VacancyEntity();
-        /** setting vacancy's fields */
-        entity.setEmployerId(callbackQuery.getFrom().getId());
-        entity.setEmployerName(dto.getEmployerName());
-        entity.setSpecialty1(dto.getSpecialty1());
-        entity.setSpecialty2(dto.getSpecialty2());
-        entity.setWorkTime(dto.getWorkTime());
-        entity.setWorkRegion(dto.getWorkRegion());
-        entity.setWorkDistinct(dto.getWorkDistinct());
-        entity.setPosition(dto.getPosition());
-        entity.setSalary(dto.getSalary());
-        entity.setConnectAddress(dto.getConnectAddress());
-        entity.setExtraInfo(dto.getExtraInfo());
-        entity = vacancyRepository.save(entity);
-        dto.setId(entity.getId());
-        /** send total Vacancy Msg  */
-        EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(callbackQuery.getFrom().getId());
-        editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83D\uDD37 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDD36 Lavozim : " + dto.getPosition() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n@IshVakansiyaBot - vakansiya va resyumelar olami!");
-        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-        /**  remove vacancy from HashMap    */
-        currentVacancy.remove(callbackQuery.getFrom().getId());
-        return editMessageText;
-    }
-
     public EditMessageText editVacancyButtons(CallbackQuery callbackQuery) {
         /** change user's step */
         UserDTO user = userService.getById(callbackQuery.getFrom().getId());
@@ -371,18 +360,121 @@ public class VacancyService {
         return editMessageText;
     }
 
-    public EditMessageText cancelVacancy(CallbackQuery callbackQuery) {
+    public EditMessageText cancelVacancy(Message message) {
         /** change user's step */
-        UserDTO user = userService.getById(callbackQuery.getFrom().getId());
+        UserDTO user = userService.getById(message.getChatId());
         user.setStep(UserStep.END);
         userService.update(user);
         /** removing vacancyTotalMsg */
         EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setChatId(message.getChatId());
         editMessageText.setText("❌  Vakansiya bekor qilindi.");
-        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMessageText.setMessageId(message.getMessageId());
         /**  remove vacancy from HashMap   */
+        currentVacancy.remove(message.getChatId());
+        return editMessageText;
+    }
+
+    public synchronized EditMessageText save(CallbackQuery callbackQuery) {
+        /** change user's step */
+        UserDTO user = userService.getById(callbackQuery.getFrom().getId());
+        user.setStep(UserStep.END);
+        userService.update(user);
+        /**  get currentVacancy to DTO */
+        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        /**  create vacancyEntity */
+        VacancyEntity entity = new VacancyEntity();
+        /** setting vacancy's fields */
+        entity.setEmployerId(callbackQuery.getFrom().getId());
+        entity.setEmployerName(dto.getEmployerName());
+        entity.setSpecialty1(dto.getSpecialty1());
+        entity.setSpecialty2(dto.getSpecialty2());
+        entity.setWorkTime(dto.getWorkTime());
+        entity.setWorkRegion(dto.getWorkRegion());
+        entity.setWorkDistinct(dto.getWorkDistinct());
+        entity.setPosition(dto.getPosition());
+        entity.setSalary(dto.getSalary());
+        entity.setConnectAddress(dto.getConnectAddress());
+        entity.setExtraInfo(dto.getExtraInfo());
+        entity = vacancyRepository.save(entity);
+        dto.setId(entity.getId());
+        /** send total Vacancy Msg  */
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83D\uDD37 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDD36 Lavozim : " + dto.getPosition() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        /**  remove vacancy from HashMap    */
         currentVacancy.remove(callbackQuery.getFrom().getId());
         return editMessageText;
+    }
+
+    public EditMessageText delete(CallbackQuery callbackQuery) {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        if (callbackQuery.getData().startsWith("deletingVacancy")) {
+            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(15));
+            Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
+            VacancyEntity entity = optional.get();
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + entity.getPosition() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n\uD83D\uDD30 Vakansiya tizimdan o'chirilishiga rozimisiz ? \uD83D\uDD30");
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Ha, roziman", "deleteVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Bekor qilish", "showLessVacancy" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("deleteVacancy")) {
+            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(13));
+            //..................................................//
+            Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
+            VacancyEntity entity = optional.get();
+            /**   change vacancy's status to DELETED  */
+            updateStatus(vacancyId, GeneralStatus.DELETED);
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\n❌ Vakansiya tizimdan o'chirildi !");
+        }
+        return editMessageText;
+    }
+
+    public void updateStatus(Integer id, GeneralStatus generalStatus) {
+        Optional<VacancyEntity> optional = vacancyRepository.findById(id);
+        VacancyEntity entity = optional.get();
+        entity.setStatus(generalStatus);
+        vacancyRepository.save(entity);
+    }
+
+    public VacancyDTO getById(Integer id) {
+        Optional<VacancyEntity> optional = vacancyRepository.findById(id);
+        VacancyEntity entity = optional.get();
+        VacancyDTO vacancyDTO = new VacancyDTO();
+
+        vacancyDTO.setId(entity.getId());
+        vacancyDTO.setCreatedDate(entity.getCreatedDate());
+        vacancyDTO.setEmployerName(entity.getEmployerName());
+        vacancyDTO.setEmployerId(entity.getEmployerId());
+        vacancyDTO.setConnectAddress(entity.getConnectAddress());
+        vacancyDTO.setExtraInfo(entity.getExtraInfo());
+        vacancyDTO.setPosition(entity.getPosition());
+        vacancyDTO.setSalary(entity.getSalary());
+        vacancyDTO.setSpecialty1(entity.getSpecialty1());
+        vacancyDTO.setSpecialty2(entity.getSpecialty2());
+        vacancyDTO.setStatus(entity.getStatus());
+        vacancyDTO.setWorkRegion(entity.getWorkRegion());
+        vacancyDTO.setWorkDistinct(entity.getWorkDistinct());
+        vacancyDTO.setWorkTime(entity.getWorkTime());
+        return vacancyDTO;
+    }
+
+    public void update(VacancyDTO dto) {
+        Optional<VacancyEntity> optional = vacancyRepository.findById(dto.getId());
+        VacancyEntity entity = optional.get();
+        entity.setId(dto.getId());
+        entity.setCreatedDate(dto.getCreatedDate());
+        entity.setEmployerName(dto.getEmployerName());
+        entity.setEmployerId(dto.getEmployerId());
+        entity.setConnectAddress(dto.getConnectAddress());
+        entity.setExtraInfo(dto.getExtraInfo());
+        entity.setPosition(dto.getPosition());
+        entity.setSalary(dto.getSalary());
+        entity.setSpecialty1(dto.getSpecialty1());
+        entity.setSpecialty2(dto.getSpecialty2());
+        entity.setStatus(dto.getStatus());
+        entity.setWorkDistinct(dto.getWorkDistinct());
+        entity.setWorkTime(dto.getWorkTime());
+        vacancyRepository.save(entity);
     }
 }

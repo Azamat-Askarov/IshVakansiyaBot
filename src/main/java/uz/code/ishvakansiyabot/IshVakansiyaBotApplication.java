@@ -9,3 +9,4 @@ public class IshVakansiyaBotApplication {
         SpringApplication.run(IshVakansiyaBotApplication.class, args);
     }
 }
+

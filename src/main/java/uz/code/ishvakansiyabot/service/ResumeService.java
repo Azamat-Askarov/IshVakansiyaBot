@@ -10,13 +10,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import uz.code.ishvakansiyabot.dto.ResumeDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.entity.ResumeEntity;
+import uz.code.ishvakansiyabot.entity.VacancyEntity;
+import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
 import uz.code.ishvakansiyabot.repository.ResumeRepository;
 import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
+import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ResumeService {
@@ -48,7 +49,7 @@ public class ResumeService {
         return sendMessage;
     }
 
-    public ResumeDTO getById(Integer id) {
+    public ResumeDTO toDTO(Integer id) {
         Optional<ResumeEntity> optional = resumeRepository.findById(id);
         ResumeEntity entity = optional.get();
         if (entity == null) {
@@ -69,6 +70,54 @@ public class ResumeService {
         dto.setConnectAddress(entity.getConnectAddress());
         dto.setExtraInfo(entity.getExtraInfo());
         return dto;
+    }
+
+    public EditMessageText getById(CallbackQuery callbackQuery) {
+        /**  create editMsg */
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        /**  get vacancyId from callBackQuery */
+        Integer resumeId = Integer.parseInt(callbackQuery.getData().substring(14));
+        /**  get resumeEntity from DB */
+        Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
+        ResumeEntity entity = null;
+        if (optional.isPresent()) {
+            entity = optional.get();
+        }
+        if (callbackQuery.getData().startsWith("showMoreResume")) {
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Rezyumeni o'chirish", "deletingResume" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "showLessResume" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("showLessResume")) {
+            /**  get created date */
+            String date = String.valueOf(entity.getCreatedDate());
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreResume" + entity.getId())))));
+        }
+        return editMessageText;
+    }
+
+    public List<SendMessage> getMyResumes(Long userId) {
+        List<ResumeEntity> resumeEntityList = resumeRepository.findByEmployeeIdAndStatus(userId, GeneralStatus.ACTIVE);
+        List<SendMessage> resumeMsgList = new LinkedList<>();
+        ResumeEntity entity;
+        String date;
+        for (int i = 0; i < resumeEntityList.size(); i++) {
+            entity = resumeEntityList.get(i);
+            date = String.valueOf(entity.getCreatedDate());
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(userId);
+            sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreResume" + entity.getId())))));
+            resumeMsgList.add(sendMessage);
+        }
+        if (resumeMsgList.isEmpty()) {
+            SendMessage send = new SendMessage();
+            send.setChatId(userId);
+            send.setText("Sizda rezyumelar mavjud emas !");
+            resumeMsgList.add(send);
+        }
+        return resumeMsgList;
     }
 
     public SendMessage setEmployeeName(Message message) {
@@ -122,7 +171,7 @@ public class ResumeService {
             UserDTO userDTO = userService.getById(callbackQuery.getFrom().getId());
             userDTO.setStep(UserStep.ACCEPTING_RESUME);
             userService.update(userDTO);
-            editMessageText.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+            editMessageText.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
         }
         return editMessageText;
@@ -154,13 +203,13 @@ public class ResumeService {
         editMessageText.setChatId(callbackQuery.getFrom().getId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (dto.getTechnologies() == null) {
-            editMessageText.setText("\uD83D\uDD30 Rezyume joylash \uD83D\uDD30\n\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + callbackQuery.getData() + "\n\n❇\uFE0F Qaysi texnologiyalarni bilasiz ?\n❇\uFE0F Yoki kasbga oid qanday ko'nikmalarga egasiz ? \uD83D\uDD30 . . . . . . . . . . . . . . . . \uD83D\uDD30");
+            editMessageText.setText("\uD83D\uDD30 Rezyume joylash \uD83D\uDD30\n\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + callbackQuery.getData() + "\n\n❇\uFE0F Qaysi texnologiyalarni bilasiz ?\n❇\uFE0F Kasbga oid qanday ko'nikmalarga egasiz ? \uD83D\uDD30 . . . . \uD83D\uDD30");
             editMessageText.setReplyMarkup(null);
         } else {
             UserDTO userDTO = userService.getById(callbackQuery.getFrom().getId());
             userDTO.setStep(UserStep.ACCEPTING_RESUME);
             userService.update(userDTO);
-            editMessageText.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+            editMessageText.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
         }
         return editMessageText;
@@ -208,7 +257,7 @@ public class ResumeService {
                     UserDTO userDTO = userService.getById(message.getChatId());
                     userDTO.setStep(UserStep.ACCEPTING_RESUME);
                     userService.update(userDTO);
-                    sendMessage.setText("\uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n" + "\uD83D\uDD37 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+                    sendMessage.setText("\uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
                     sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
                 }
             } else {
@@ -235,7 +284,7 @@ public class ResumeService {
             UserDTO userDTO = userService.getById(message.getChatId());
             userDTO.setStep(UserStep.ACCEPTING_RESUME);
             userService.update(userDTO);
-            sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDD37 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+            sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDDFA Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
         }
         return sendMessage;
@@ -256,7 +305,7 @@ public class ResumeService {
             UserDTO userDTO = userService.getById(message.getChatId());
             userDTO.setStep(UserStep.ACCEPTING_RESUME);
             userService.update(userDTO);
-            sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDD37 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+            sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
         }
         return sendMessage;
@@ -270,7 +319,7 @@ public class ResumeService {
             /**  set extra info to vacancy */
             currentResume.get(message.getChatId()).setExtraInfo(message.getText());
             ResumeDTO dto = currentResume.get(message.getChatId());
-            sendMessage.setText("\uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+            sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
             /** change user's step */
             UserDTO userDTO = userService.getById(message.getChatId());
@@ -311,48 +360,48 @@ public class ResumeService {
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (data.equals("employeeName")) {
             currentResume.get(callbackQuery.getFrom().getId()).setEmployeeName(null);
-            editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism . . .");
+            editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : ...");
         } else if (data.equals("address")) {
             currentResume.get(callbackQuery.getFrom().getId()).setWorkRegion(null);
             currentResume.get(callbackQuery.getFrom().getId()).setWorkDistinct(null);
-            editMessageText.setText("\uD83D\uDDFA  Manzil . . .");
+            editMessageText.setText("\uD83D\uDDFA  Manzil : ...");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.regionsButtons());
         } else if (data.equals("specialty")) {
             currentResume.get(callbackQuery.getFrom().getId()).setSpecialty1(null);
             currentResume.get(callbackQuery.getFrom().getId()).setSpecialty2(null);
-            editMessageText.setText("\uD83D\uDCCB Yo'nalish . . .");
+            editMessageText.setText("\uD83D\uDCCB  Yo'nalish : ...");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.specialtyButtons());
         } else if (data.equals("technologies")) {
             currentResume.get(callbackQuery.getFrom().getId()).setTechnologies(null);
-            editMessageText.setText("\uD83D\uDCCB Texnologiyalar . . .");
+            editMessageText.setText("❇\uFE0F  Texnologiyalar : ...");
         } else if (data.equals("workTime")) {
             currentResume.get(callbackQuery.getFrom().getId()).setWorkTime(null);
-            editMessageText.setText("\uD83D\uDD5E Haftalik ish soati . . .");
+            editMessageText.setText("\uD83D\uDD5E  Haftalik ish soati : ...");
         } else if (data.equals("salary")) {
             currentResume.get(callbackQuery.getFrom().getId()).setSalary(null);
-            editMessageText.setText("\uD83D\uDCB0 Maosh . . .");
+            editMessageText.setText("\uD83D\uDCB0  Maosh : ...");
         } else if (data.equals("callAddress")) {
             currentResume.get(callbackQuery.getFrom().getId()).setConnectAddress(null);
             editMessageText.setText("\uD83D\uDCE8  Aloqaga chiqish uchun link yoki tel raqam yozib qoldiring.");
         } else if (data.equals("extraInfo")) {
             currentResume.get(callbackQuery.getFrom().getId()).setExtraInfo(null);
-            editMessageText.setText("‼\uFE0F \uD83D\uDCCB  Ish beruvchidan nimalarni talab qilishingiz, o'z ish tajribangiz darajasi,  korxonaga nimalarni taklif qila olasiz va o'zingiz haqida ba'zi ma'lumotlar . .\n" + "Shu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB . . .");
+            editMessageText.setText("‼\uFE0F  Ish beruvchidan nimalarni talab qilishingiz, o'z ish tajribangiz darajasi,  korxonaga nimalarni taklif qila olasiz va o'zingiz haqida ba'zi ma'lumotlar . .\n" + "Shu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB . . .");
         }
         return editMessageText;
     }
 
-    public EditMessageText cancelResume(CallbackQuery callbackQuery) {
+    public EditMessageText cancelResume(Message message) {
         /** change user's step */
-        UserDTO user = userService.getById(callbackQuery.getFrom().getId());
+        UserDTO user = userService.getById(message.getChatId());
         user.setStep(UserStep.END);
         userService.update(user);
         /** removing vacancyTotalMsg */
         EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setChatId(message.getChatId());
         editMessageText.setText("❌  Rezyume bekor qilindi.");
-        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMessageText.setMessageId(message.getMessageId());
         /**  remove vacancy from HashMap   */
-        currentResume.remove(callbackQuery.getFrom().getId());
+        currentResume.remove(message.getChatId());
         return editMessageText;
     }
 
@@ -382,11 +431,41 @@ public class ResumeService {
         /** send total Vacancy Msg  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
-        editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n@IshVakansiyaBot - vakansiya va resyumelar olami!");
+        editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         /**  remove vacancy from HashMap    */
         currentResume.remove(callbackQuery.getFrom().getId());
         return editMessageText;
     }
+
+    public EditMessageText delete(CallbackQuery callbackQuery) {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        if (callbackQuery.getData().startsWith("deletingResume")) {
+            Integer resumeId = Integer.parseInt(callbackQuery.getData().substring(14));
+            Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
+            ResumeEntity entity = optional.get();
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n\uD83D\uDD30 Rezyume tizimdan o'chirilishiga rozimisiz ? \uD83D\uDD30");
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Ha, roziman", "deleteResume" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Bekor qilish", "showLessResume" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("deleteResume")) {
+            Integer resumeId = Integer.parseInt(callbackQuery.getData().substring(12));
+            //..................................................//
+            Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
+            ResumeEntity entity = optional.get();
+            /**   change vacancy's status to DELETED  */
+            updateStatus(resumeId, GeneralStatus.DELETED);
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\n❌ Rezyume tizimdan o'chirildi !");
+        }
+        return editMessageText;
+    }
+
+    public void updateStatus(Integer id, GeneralStatus generalStatus) {
+        Optional<ResumeEntity> optional = resumeRepository.findById(id);
+        ResumeEntity entity = optional.get();
+        entity.setStatus(generalStatus);
+        resumeRepository.save(entity);
+    }
+
 
 }
