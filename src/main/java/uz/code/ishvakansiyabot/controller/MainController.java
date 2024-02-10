@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -17,6 +18,8 @@ import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
+import uz.code.ishvakansiyabot.repository.MapRepository;
+import uz.code.ishvakansiyabot.repository.VacancyRepository;
 import uz.code.ishvakansiyabot.service.AuthService;
 import uz.code.ishvakansiyabot.service.ResumeService;
 import uz.code.ishvakansiyabot.service.UserService;
@@ -26,6 +29,10 @@ import java.util.List;
 
 @Component
 public class MainController extends TelegramLongPollingBot {
+    @Autowired
+    MapRepository mapRepository;
+    @Autowired
+    VacancyRepository vacancyRepository;
     @Autowired
     BotConfig botConfig;
     @Autowired
@@ -44,7 +51,15 @@ public class MainController extends TelegramLongPollingBot {
             Message message = update.getMessage();
             User user = message.getFrom();
             UserDTO currentUser = authService.getById(user.getId());
-            if (currentUser == null || currentUser.getStatus().equals(GeneralStatus.DELETED)) {
+            if (message.getText().equals("Bekor qilishㅤ")) {
+                /**   oxirgi msg ni delete qilish  */
+                DeleteMessage deleteMessage = new DeleteMessage();
+                deleteMessage.setChatId(user.getId());
+                deleteMessage.setMessageId(message.getMessageId() - 1);
+                execute(deleteMessage);
+                /**   "calcelPosting" msg  */
+                sendMsg(userService.cancelPosting(currentUser));
+            } else if (currentUser == null || currentUser.getStatus().equals(GeneralStatus.DELETED)) {
                 /** hello user...... */
                 sendMsg(authService.helloUser(user));
             } else if (currentUser.getStatus().equals(GeneralStatus.NEW_USER)) {
@@ -58,7 +73,7 @@ public class MainController extends TelegramLongPollingBot {
                 sendMsg(vacancyService.create(currentUser.getTgId()));
             } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
                 /**  get current vacancy */
-                VacancyDTO vacancyDTO = vacancyService.currentVacancy.get(currentUser.getTgId());
+                VacancyDTO vacancyDTO = mapRepository.currentVacancy.get(currentUser.getTgId());
                 if (vacancyDTO.getEmployerName() == null) {
                     /** set employerName and show regions */
                     sendMsg(vacancyService.setEmployerName(message));
@@ -82,7 +97,7 @@ public class MainController extends TelegramLongPollingBot {
                 sendMsg(resumeService.create(currentUser.getTgId()));
             } else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
                 /**  get current resume */
-                ResumeDTO resumeDTO = resumeService.currentResume.get(currentUser.getTgId());
+                ResumeDTO resumeDTO = mapRepository.currentResume.get(currentUser.getTgId());
                 if (resumeDTO.getEmployeeName() == null) {
                     /** set employeeName and show regions */
                     sendMsg(resumeService.setEmployeeName(message));
@@ -135,6 +150,7 @@ public class MainController extends TelegramLongPollingBot {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setText("✍\uD83C\uDFFB Ismingiz . .");
                     sendMessage.setChatId(user.getId());
+                    sendMessage.setReplyMarkup(userService.cancelButton());
                     sendMsg(sendMessage);
                 } else if (callbackQuery.getData().equals("aboutBot")) {
                     /** show aboutBot and make signUp button */
@@ -142,23 +158,26 @@ public class MainController extends TelegramLongPollingBot {
                 }
             } else if (currentUser.getAddress() == null) {
                 /** set user's region and show total fields and accepting buttons */
-                sendEditMsg(authService.setAddress(callbackQuery)); // viloyat set qilish
-            } else if (callbackQuery.getData().startsWith("showMoreVacancy")) {
-                sendEditMsg(vacancyService.getById(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("showMoreResume")) {
-                sendEditMsg(resumeService.getById(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("showLessVacancy")) {
-                sendEditMsg(vacancyService.getById(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("showLessResume")) {
-                sendEditMsg(resumeService.getById(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("deletingVacancy")) {
-                sendEditMsg(vacancyService.delete(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("deletingResume")) {
-                sendEditMsg(resumeService.delete(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("deleteVacancy")) {
-                sendEditMsg(vacancyService.delete(callbackQuery));
-            } else if (callbackQuery.getData().startsWith("deleteResume")) {
-                sendEditMsg(resumeService.delete(callbackQuery));
+                sendEditMsg(authService.setAddress(callbackQuery));
+            } else if (callbackQuery.getData().startsWith("get")) {
+                /**  my posts bo'limi */
+                if (callbackQuery.getData().startsWith("getLessVacancy")) {
+                    sendEditMsg(vacancyService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getMoreVacancy")) {
+                    sendEditMsg(vacancyService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getDeletingVacancy")) {
+                    sendEditMsg(vacancyService.delete(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getDeleteVacancy")) {
+                    sendEditMsg(vacancyService.delete(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getLessResume")) {
+                    sendEditMsg(resumeService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getMoreResume")) {
+                    sendEditMsg(resumeService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getDeletingResume")) {
+                    sendEditMsg(resumeService.delete(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getDeleteResume")) {
+                    sendEditMsg(resumeService.delete(callbackQuery));
+                }
             } else if (currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
                 /** new user fields accepting or noAccepting */
                 sendEditMsg(authService.acceptNewUser(callbackQuery));
@@ -172,16 +191,16 @@ public class MainController extends TelegramLongPollingBot {
                     sendMsg(msg);
                 }
             } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
-                if (vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkRegion() == null) {
+                if (mapRepository.currentVacancy.get(currentUser.getTgId()).getWorkRegion() == null) {
                     /** set vacancy region and show districts buttons */
                     sendEditMsg(vacancyService.setVacancyRegion(update.getCallbackQuery()));
-                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getWorkDistinct() == null) {
+                } else if (mapRepository.currentVacancy.get(currentUser.getTgId()).getWorkDistinct() == null) {
                     /** set distinct and show specialty1 buttons */
                     sendEditMsg(vacancyService.setVacancyDistinct(update.getCallbackQuery()));
-                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty1() == null) {
+                } else if (mapRepository.currentVacancy.get(currentUser.getTgId()).getSpecialty1() == null) {
                     /**  set specialty1 and show specialty2 buttons */
                     sendEditMsg(vacancyService.setSpecialty1(update.getCallbackQuery()));
-                } else if (vacancyService.currentVacancy.get(currentUser.getTgId()).getSpecialty2() == null) {
+                } else if (mapRepository.currentVacancy.get(currentUser.getTgId()).getSpecialty2() == null) {
                     /**  set specialty2 and "enter position msg" */
                     sendEditMsg(vacancyService.setSpecialty2(update.getCallbackQuery()));
                 }
@@ -206,16 +225,16 @@ public class MainController extends TelegramLongPollingBot {
             } else if (currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
                 sendEditMsg(vacancyService.editVacancy(callbackQuery));
             } else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
-                if (resumeService.currentResume.get(currentUser.getTgId()).getWorkRegion() == null) {
+                if (mapRepository.currentResume.get(currentUser.getTgId()).getWorkRegion() == null) {
                     /** set resume region and show districts buttons */
                     sendEditMsg(resumeService.setResumeRegion(update.getCallbackQuery()));
-                } else if (resumeService.currentResume.get(currentUser.getTgId()).getWorkDistinct() == null) {
+                } else if (mapRepository.currentResume.get(currentUser.getTgId()).getWorkDistinct() == null) {
                     /** set distinct and show specialty1 buttons */
                     sendEditMsg(resumeService.setResumeDistinct(update.getCallbackQuery()));
-                } else if (resumeService.currentResume.get(currentUser.getTgId()).getSpecialty1() == null) {
+                } else if (mapRepository.currentResume.get(currentUser.getTgId()).getSpecialty1() == null) {
                     /**  set specialty1 and show specialty2 buttons */
                     sendEditMsg(resumeService.setSpecialty1(update.getCallbackQuery()));
-                } else if (resumeService.currentResume.get(currentUser.getTgId()).getSpecialty2() == null) {
+                } else if (mapRepository.currentResume.get(currentUser.getTgId()).getSpecialty2() == null) {
                     /**  set specialty2 and "enter position msg" */
                     sendEditMsg(resumeService.setSpecialty2(update.getCallbackQuery()));
                 }

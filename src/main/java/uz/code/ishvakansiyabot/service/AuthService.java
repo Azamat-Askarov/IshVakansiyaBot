@@ -152,7 +152,7 @@ public class AuthService {
             editMsg.setText("\uD83D\uDD30 Ro'yxatdan o'tish \uD83D\uDD30\n✍\uD83C\uDFFB Ismingiz . .");
         } else if (callbackQuery.getData().equals("cancel")) {
             /** delete user from DB */
-            delete(callbackQuery.getFrom().getId());
+            userService.delete(callbackQuery.getFrom().getId());
             /** sendEditMsg */
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
@@ -160,15 +160,4 @@ public class AuthService {
         }
         return editMsg;
     }
-
-    public void delete(Long userId) {
-        UserDTO dto = getById(userId);
-        dto.setStatus(GeneralStatus.DELETED);
-        dto.setName(null);
-        dto.setAge(null);
-        dto.setAddress(null);
-        userService.update(dto);
-    }
-
-
 }

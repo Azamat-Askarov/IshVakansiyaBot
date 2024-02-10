@@ -3,17 +3,16 @@ package uz.code.ishvakansiyabot.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
-import uz.code.ishvakansiyabot.entity.UserEntity;
 import uz.code.ishvakansiyabot.entity.VacancyEntity;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
+import uz.code.ishvakansiyabot.repository.MapRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
 import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
 import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
@@ -23,16 +22,17 @@ import java.util.*;
 @Service
 public class VacancyService {
     @Autowired
+    MapRepository mapRepository;
+    @Autowired
     VacancyRepository vacancyRepository;
     @Autowired
     UserService userService;
-    public Map<Long, VacancyDTO> currentVacancy = new HashMap<>();
 
     public SendMessage create(Long userId) {
         /** add vacancy to HashMap */
         VacancyDTO vacancy = new VacancyDTO();
         vacancy.setEmployerId(userId);
-        currentVacancy.put(userId, vacancy);
+        mapRepository.currentVacancy.put(userId, vacancy);
         /** change currentUser's step */
         UserDTO user = userService.getById(userId);
         user.setStep(UserStep.ADD_VACANCY);
@@ -45,7 +45,7 @@ public class VacancyService {
         ReplyKeyboardRemove removeButton = new ReplyKeyboardRemove();
         removeButton.setSelective(true);
         removeButton.setRemoveKeyboard(true);
-        sendMessage.setReplyMarkup(removeButton);
+        sendMessage.setReplyMarkup(userService.cancelButton());
         return sendMessage;
     }
 
@@ -54,18 +54,18 @@ public class VacancyService {
         editMessageText.setChatId(callbackQuery.getFrom().getId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         //..............................................//
-        Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(15));
+        Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(14));
         /**  get vacancyEntity from DB */
         Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
         VacancyEntity entity = optional.get();
-        if (callbackQuery.getData().startsWith("showMoreVacancy")) {
+        if (callbackQuery.getData().startsWith("getMoreVacancy")) {
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + entity.getPosition() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Vakansiyani o'chirish", "deletingVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "showLessVacancy" + entity.getId())))));
-        } else if (callbackQuery.getData().startsWith("showLessVacancy")) {
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Vakansiyani o'chirish", "getDeletingVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "getLessVacancy" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("getLessVacancy")) {
             /**  get created date */
             String date = String.valueOf(entity.getCreatedDate());
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreVacancy" + entity.getId())))));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreVacancy" + entity.getId())))));
         }
         return editMessageText;
     }
@@ -81,7 +81,7 @@ public class VacancyService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(userId);
             sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
-            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "showMoreVacancy" + entity.getId())))));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreVacancy" + entity.getId())))));
             vacancyMsgList.add(sendMessage);
         }
         if (vacancyMsgList.isEmpty()) {
@@ -94,9 +94,9 @@ public class VacancyService {
     }
 
     public SendMessage setEmployerName(Message message) {
-        currentVacancy.get(message.getChatId()).setEmployerName(message.getText());
+        mapRepository.currentVacancy.get(message.getChatId()).setEmployerName(message.getText());
         /**   get currentVacancy */
-        VacancyDTO dto = currentVacancy.get(message.getChatId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
         //.........................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
@@ -115,11 +115,11 @@ public class VacancyService {
 
     public EditMessageText setVacancyRegion(CallbackQuery callbackQuery) {
         /** set region to vacancy */
-        currentVacancy.get(callbackQuery.getFrom().getId()).setWorkRegion(callbackQuery.getData());
+        mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setWorkRegion(callbackQuery.getData());
         /**  remove regions and show districts BUTTONS  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
-        editMessageText.setText("\uD83D\uDD30 Vakansiya joylash \uD83D\uDD30\n\n\uD83D\uDD37 Ish beruvchi : " + currentVacancy.get(callbackQuery.getFrom().getId()).getEmployerName() + "\n\uD83D\uDD36 Manzil : " + callbackQuery.getData() + ",  ...");
+        editMessageText.setText("\uD83D\uDD30 Vakansiya joylash \uD83D\uDD30\n\n\uD83D\uDD37 Ish beruvchi : " + mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).getEmployerName() + "\n\uD83D\uDD36 Manzil : " + callbackQuery.getData() + ",  ...");
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         /**  . .make distinct buttons  */
         editMessageText.setReplyMarkup(InlineKeyBoardUtil.districtButtons(callbackQuery));
@@ -128,9 +128,9 @@ public class VacancyService {
 
     public EditMessageText setVacancyDistinct(CallbackQuery callbackQuery) {
         /** set distinct to vacancy */
-        currentVacancy.get(callbackQuery.getFrom().getId()).setWorkDistinct(callbackQuery.getData());
+        mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setWorkDistinct(callbackQuery.getData());
         /**  get currentVacancy */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(callbackQuery.getFrom().getId());
         //...............................................//
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
@@ -152,9 +152,9 @@ public class VacancyService {
 
     public EditMessageText setSpecialty1(CallbackQuery callbackQuery) {
         /** set specialty to vacancy */
-        currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty1(callbackQuery.getData());
+        mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty1(callbackQuery.getData());
         /**  remove Sspecialty(1) button and show specialty(2) buttons  */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(callbackQuery.getFrom().getId());
         //......................................................//
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
@@ -167,9 +167,9 @@ public class VacancyService {
 
     public EditMessageText setSpecialty2(CallbackQuery callbackQuery) {
         /** set specialty to vacancy */
-        currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty2(callbackQuery.getData());
+        mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty2(callbackQuery.getData());
         /**  get currentVacancy */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(callbackQuery.getFrom().getId());
         //...............................................//
         /**  remove Sspecialty(1) button and show specialty(2) buttons  */
         EditMessageText editMessageText = new EditMessageText();
@@ -190,9 +190,9 @@ public class VacancyService {
 
     public SendMessage setPosition(Message message) {
         /**  set position to vacancy */
-        currentVacancy.get(message.getChatId()).setPosition(message.getText());
+        mapRepository.currentVacancy.get(message.getChatId()).setPosition(message.getText());
         /**   get vcurrentVacancy */
-        VacancyDTO dto = currentVacancy.get(message.getChatId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
         //.......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
@@ -211,14 +211,14 @@ public class VacancyService {
 
     public SendMessage setWorkTime(Message message) {
         /**   get vcurrentVacancy */
-        VacancyDTO dto = currentVacancy.get(message.getChatId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
         //.......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         if (userService.isDigit(message.getText())) {
             if (Integer.parseInt(message.getText()) >= 7 && Integer.parseInt(message.getText()) <= 70) {
                 /** set setWorkTime to vacancy */
-                currentVacancy.get(message.getChatId()).setWorkTime(message.getText());
+                mapRepository.currentVacancy.get(message.getChatId()).setWorkTime(message.getText());
                 if (dto.getSalary() == null) {
                     /**  enter salary msg */
                     sendMessage.setText(" \uD83D\uDD30  Oylik maoshni kiriting  \uD83D\uDD30\n\n‼\uFE0F  so'm yoki dollarda aniq qilib kiriting.");
@@ -240,12 +240,12 @@ public class VacancyService {
 
     public SendMessage setSalary(Message message) {
         /**   get currentVacancy */
-        VacancyDTO dto = currentVacancy.get(message.getChatId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
         //..............................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         /** set salary to vacancy */
-        currentVacancy.get(message.getChatId()).setSalary(message.getText());
+        mapRepository.currentVacancy.get(message.getChatId()).setSalary(message.getText());
         /**  enter call link msg */
         if (dto.getConnectAddress() == null) {
             sendMessage.setText("\uD83D\uDCE8  Aloqaga chiqish uchun link yoki tel raqam yozib qoldiring.");
@@ -261,12 +261,12 @@ public class VacancyService {
 
     public SendMessage setConnectAddress(Message message) {
         /**   get currentVacancy */
-        VacancyDTO dto = currentVacancy.get(message.getChatId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
         //......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         /** set connect address to vacancy */
-        currentVacancy.get(message.getChatId()).setConnectAddress(message.getText());
+        mapRepository.currentVacancy.get(message.getChatId()).setConnectAddress(message.getText());
         if (dto.getExtraInfo() == null) {
             /**  enter extra info msg */
             sendMessage.setText("\uD83D\uDCCB  Xodimdan nimalarni talab qilishingiz, uning ish tajribasi, darajasi, xodimga nimalarni taklif qila olasiz va korxona haqida ba'zi ma'lumotlar . .\nShu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB  Qo'shimcha ma'lumotlarni kiriting.");
@@ -286,8 +286,8 @@ public class VacancyService {
         /**  check extra info to 128 sybols */
         if (message.getText().length() >= 127) {
             /**  set extra info to vacancy */
-            currentVacancy.get(message.getChatId()).setExtraInfo(message.getText());
-            VacancyDTO dto = currentVacancy.get(message.getChatId());
+            mapRepository.currentVacancy.get(message.getChatId()).setExtraInfo(message.getText());
+            VacancyDTO dto = mapRepository.currentVacancy.get(message.getChatId());
             //...............................................................//
             sendMessage.setText("\uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n" + "\uD83D\uDD37 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDD36 Lavozim : " + dto.getPosition() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
@@ -307,7 +307,7 @@ public class VacancyService {
         user.setStep(UserStep.EDIT_VACANCY);
         userService.update(user);
         /**  get currentVacancy to DTO */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(callbackQuery.getFrom().getId());
         /** send total Vacancy Msg  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
@@ -329,32 +329,32 @@ public class VacancyService {
         editMessageText.setChatId(callbackQuery.getFrom().getId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (data.equals("employerName")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setEmployerName(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setEmployerName(null);
             editMessageText.setText("\uD83C\uDFE2  Ish beruvchi nomi . .");
         } else if (data.equals("address")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setWorkRegion(null);
-            currentVacancy.get(callbackQuery.getFrom().getId()).setWorkDistinct(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setWorkRegion(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setWorkDistinct(null);
             editMessageText.setText("\uD83D\uDDFA Manzil . .");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.regionsButtons());
         } else if (data.equals("specialty")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty1(null);
-            currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty2(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty1(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setSpecialty2(null);
             editMessageText.setText("\uD83D\uDCCB Yo'nalish . .");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.specialtyButtons());
         } else if (data.equals("position")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setPosition(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setPosition(null);
             editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim . .");
         } else if (data.equals("workTime")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setWorkTime(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setWorkTime(null);
             editMessageText.setText("\uD83D\uDD5E Haftalik ish soati . .");
         } else if (data.equals("salary")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setSalary(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setSalary(null);
             editMessageText.setText("\uD83D\uDCB0 Maosh . .");
         } else if (data.equals("callAddress")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setConnectAddress(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setConnectAddress(null);
             editMessageText.setText("\uD83D\uDCE8  Aloqaga chiqish uchun link yoki tel raqam yozib qoldiring.");
         } else if (data.equals("extraInfo")) {
-            currentVacancy.get(callbackQuery.getFrom().getId()).setExtraInfo(null);
+            mapRepository.currentVacancy.get(callbackQuery.getFrom().getId()).setExtraInfo(null);
             editMessageText.setText("‼\uFE0F \uD83D\uDCCB  Xodimdan nimalarni talab qilishingiz, uning ish tajribasi, darajasi, xodimga nimalarni taklif qila olasiz va korxona haqida ba'zi ma'lumotlar . .\n" + "Shu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB  Qo'shimcha ma'lumotlarni kiriting.");
         }
         return editMessageText;
@@ -371,7 +371,7 @@ public class VacancyService {
         editMessageText.setText("❌  Vakansiya bekor qilindi.");
         editMessageText.setMessageId(message.getMessageId());
         /**  remove vacancy from HashMap   */
-        currentVacancy.remove(message.getChatId());
+        mapRepository.currentVacancy.remove(message.getChatId());
         return editMessageText;
     }
 
@@ -381,7 +381,7 @@ public class VacancyService {
         user.setStep(UserStep.END);
         userService.update(user);
         /**  get currentVacancy to DTO */
-        VacancyDTO dto = currentVacancy.get(callbackQuery.getFrom().getId());
+        VacancyDTO dto = mapRepository.currentVacancy.get(callbackQuery.getFrom().getId());
         /**  create vacancyEntity */
         VacancyEntity entity = new VacancyEntity();
         /** setting vacancy's fields */
@@ -404,7 +404,7 @@ public class VacancyService {
         editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83D\uDD37 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDD36 Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDD37 Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDD36 Lavozim : " + dto.getPosition() + "\n\uD83D\uDD37 Maosh : " + dto.getSalary() + "\n\uD83D\uDD36 Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDD37 Aloqa : " + dto.getConnectAddress() + "\n\n\uD83D\uDD36 Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         /**  remove vacancy from HashMap    */
-        currentVacancy.remove(callbackQuery.getFrom().getId());
+        mapRepository.currentVacancy.remove(callbackQuery.getFrom().getId());
         return editMessageText;
     }
 
@@ -412,29 +412,22 @@ public class VacancyService {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-        if (callbackQuery.getData().startsWith("deletingVacancy")) {
-            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(15));
+        if (callbackQuery.getData().startsWith("getDeletingVacancy")) {
+            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(18));
             Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
             VacancyEntity entity = optional.get();
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + entity.getPosition() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n\uD83D\uDD30 Vakansiya tizimdan o'chirilishiga rozimisiz ? \uD83D\uDD30");
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Ha, roziman", "deleteVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Bekor qilish", "showLessVacancy" + entity.getId())))));
-        } else if (callbackQuery.getData().startsWith("deleteVacancy")) {
-            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(13));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Ha, roziman", "getDeleteVacancy" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Bekor qilish", "getLessVacancy" + entity.getId())))));
+        } else if (callbackQuery.getData().startsWith("getDeleteVacancy")) {
+            Integer vacancyId = Integer.parseInt(callbackQuery.getData().substring(16));
             //..................................................//
             Optional<VacancyEntity> optional = vacancyRepository.findById(vacancyId);
             VacancyEntity entity = optional.get();
             /**   change vacancy's status to DELETED  */
-            updateStatus(vacancyId, GeneralStatus.DELETED);
+            vacancyRepository.changeVacancyStatus(vacancyId, GeneralStatus.DELETED);
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\n❌ Vakansiya tizimdan o'chirildi !");
         }
         return editMessageText;
-    }
-
-    public void updateStatus(Integer id, GeneralStatus generalStatus) {
-        Optional<VacancyEntity> optional = vacancyRepository.findById(id);
-        VacancyEntity entity = optional.get();
-        entity.setStatus(generalStatus);
-        vacancyRepository.save(entity);
     }
 
     public VacancyDTO getById(Integer id) {
