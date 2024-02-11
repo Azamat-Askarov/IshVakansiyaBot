@@ -19,7 +19,7 @@ public class ResumeEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private GeneralStatus status = GeneralStatus.ACTIVE;
-    private LocalDateTime createdDate = LocalDateTime.now();
+    private String createdDate;
     @Column(columnDefinition = "text")
     private String employeeName;
     private String specialty1;

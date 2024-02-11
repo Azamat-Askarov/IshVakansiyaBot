@@ -22,4 +22,10 @@ public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer
     @Query("update VacancyEntity set status =?2 where id =?1 ")
     int changeVacancyStatus(Integer id, GeneralStatus status);
 
+    @Transactional
+    @Modifying
+    @Query("select employerId from VacancyEntity where workRegion =?1 and specialty2 =?2 and status =?3")
+    List<Long> getEmployerIdByWorkRegionAndSpecialty2AndStatus(String region, String specialty2, GeneralStatus generalStatus);
+
+
 }

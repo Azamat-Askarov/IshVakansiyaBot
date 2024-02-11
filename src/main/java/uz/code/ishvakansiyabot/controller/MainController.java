@@ -177,6 +177,14 @@ public class MainController extends TelegramLongPollingBot {
                     sendEditMsg(resumeService.delete(callbackQuery));
                 } else if (callbackQuery.getData().startsWith("getDeleteResume")) {
                     sendEditMsg(resumeService.delete(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getMoreNewVacancy")) {
+                    sendEditMsg(vacancyService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getLessNewVacancy")) {
+                    sendEditMsg(vacancyService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getMoreNewResume")) {
+                    sendEditMsg(resumeService.getById(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getLessNewResume")) {
+                    sendEditMsg(resumeService.getById(callbackQuery));
                 }
             } else if (currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
                 /** new user fields accepting or noAccepting */
@@ -206,9 +214,20 @@ public class MainController extends TelegramLongPollingBot {
                 }
             } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
                 if (callbackQuery.getData().equals("accept")) {
-                    sendEditMsg(vacancyService.save(callbackQuery));
+                    VacancyDTO dto = vacancyService.save(callbackQuery);
+                    /** send total Vacancy Msg  */
+                    EditMessageText editMessageText = new EditMessageText();
+                    editMessageText.setChatId(callbackQuery.getFrom().getId());
+                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + dto.getPosition() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+                    editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+                    sendEditMsg(editMessageText);
+                    //.............................................//
+                    List<SendMessage> newVacaciesList = vacancyService.sendingVacancyToEmployees(dto);
+                    for (int i = 0; i < newVacaciesList.size(); i++) {
+                        sendMsg(newVacaciesList.get(i));
+                    }
                     SendMessage msg = new SendMessage();
-                    msg.setText("✅ Vakansiya tizimga yuklandi va kiritilgan yo'nalish bo'yicha ish izlayotgan foydalanuvchilarga uzatildi.");
+                    msg.setText("✅ Vakansiya tizimga yuklandi va kiritilgan yo'nalish bo'yicha ish izlayotganlarga uzatildi.");
                     msg.setChatId(currentUser.getTgId());
                     msg.setReplyMarkup(userService.mainMenuButtons());
                     sendMsg(msg);
@@ -240,7 +259,18 @@ public class MainController extends TelegramLongPollingBot {
                 }
             } else if (currentUser.getStep().equals(UserStep.ACCEPTING_RESUME)) {
                 if (callbackQuery.getData().equals("accept")) {
-                    sendEditMsg(resumeService.save(callbackQuery));
+                    ResumeDTO dto = resumeService.save(callbackQuery);
+                    /** send total Vacancy Msg  */
+                    EditMessageText editMessageText = new EditMessageText();
+                    editMessageText.setChatId(callbackQuery.getFrom().getId());
+                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+                    editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+                    sendEditMsg(editMessageText);
+                    //.................................................//
+                    List<SendMessage> newResumesList = resumeService.sendingResumeToEmployers(dto);
+                    for (int i = 0; i < newResumesList.size(); i++) {
+                        sendMsg(newResumesList.get(i));
+                    }
                     SendMessage msg = new SendMessage();
                     msg.setText("✅ Rezyume tizimga yuklandi va kiritilgan yo'nalish bo'yicha barcha ish beruvchilarga uzatildi.");
                     msg.setChatId(currentUser.getTgId());

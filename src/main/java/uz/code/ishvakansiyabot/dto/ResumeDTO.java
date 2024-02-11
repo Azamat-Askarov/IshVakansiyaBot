@@ -10,7 +10,7 @@ public class ResumeDTO {
     private Integer id;
     private Long employeeId;
     private GeneralStatus status;
-    private LocalDateTime createdDate;
+    private String createdDate;
     private String employeeName;
     private String specialty1;
     private String specialty2;

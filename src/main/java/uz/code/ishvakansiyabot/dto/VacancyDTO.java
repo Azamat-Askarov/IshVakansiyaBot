@@ -10,7 +10,7 @@ public class VacancyDTO {
     private Integer id;
     private Long employerId;
     private GeneralStatus status;
-    private LocalDateTime createdDate;
+    private String createdDate;
     private String employerName;
     private String specialty1;
     private String specialty2;

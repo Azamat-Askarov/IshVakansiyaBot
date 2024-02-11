@@ -31,7 +31,6 @@ public class UserService {
     @Autowired
     ResumeRepository resumeRepository;
 
-
     public Boolean isDigit(String text) {
         for (int i = 0; i < text.length(); i++) {
             if (!Character.isDigit(text.charAt(i))) {
@@ -40,7 +39,6 @@ public class UserService {
         }
         return true;
     }
-
 
     public UserDTO getById(Long id) {
         UserEntity entity = userRepository.findByTgId(id);
@@ -81,6 +79,47 @@ public class UserService {
         dto.setAge(null);
         dto.setAddress(null);
         update(dto);
+    }
+
+    public SendMessage cancelPosting(UserDTO currentUser) {
+        userRepository.changeUserStep(currentUser.getTgId(), UserStep.END);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(currentUser.getTgId());
+        if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
+            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentResume.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
+            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentVacancy.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
+            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentVacancy.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_RESUME)) {
+            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentResume.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
+            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentVacancy.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
+            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
+            /**   remove vacancy from vacancyMap */
+            mapRepository.currentResume.remove(currentUser.getTgId());
+        }
+        sendMessage.setReplyMarkup(mainMenuButtons());
+        //..................................................//
+        if (currentUser.getStep().equals(UserStep.CREATING) || currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
+            sendMessage.setText("❌ Ro'yxatdan o'tish bekor qilindi.");
+            sendMessage.setReplyMarkup(startButton());
+            /** delete user from DB */
+            delete(currentUser.getTgId());
+        }
+
+        return sendMessage;
     }
 
     public ReplyKeyboardMarkup mainMenuButtons() {
@@ -149,46 +188,5 @@ public class UserService {
         removeButton.setSelective(true);
         removeButton.setRemoveKeyboard(true);
         return removeButton;
-    }
-
-    public SendMessage cancelPosting(UserDTO currentUser) {
-        userRepository.changeUserStep(currentUser.getTgId(), UserStep.END);
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(currentUser.getTgId());
-        if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
-        }
-        sendMessage.setReplyMarkup(mainMenuButtons());
-        //..................................................//
-        if (currentUser.getStep().equals(UserStep.CREATING) || currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
-            sendMessage.setText("❌ Ro'yxatdan o'tish bekor qilindi.");
-            sendMessage.setReplyMarkup(startButton());
-            /** delete user from DB */
-            delete(currentUser.getTgId());
-        }
-
-        return sendMessage;
     }
 }
