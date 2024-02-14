@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class UserDTO {
     private Integer botId;
     private Long tgId;
-    private LocalDateTime createdDate;
+    private String createdDate;
     private UserRole role;
     private GeneralStatus status;
     private UserStep step;

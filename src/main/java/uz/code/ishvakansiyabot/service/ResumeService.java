@@ -18,14 +18,13 @@ import uz.code.ishvakansiyabot.repository.ResumeRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
 import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
 import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
+import uz.code.ishvakansiyabot.util.ReplyButtons;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 public class ResumeService {
-    @Autowired
-    MapRepository mapRepository;
     @Autowired
     ResumeRepository resumeRepository;
     @Autowired
@@ -37,7 +36,7 @@ public class ResumeService {
         /** add vacancy to HashMap */
         ResumeDTO resume = new ResumeDTO();
         resume.setEmployeeId(userId);
-        mapRepository.currentResume.put(userId, resume);
+        MapRepository.currentResume.put(userId, resume);
         /** change currentUser's step */
         UserDTO user = userService.getById(userId);
         user.setStep(UserStep.ADD_RESUME);
@@ -50,7 +49,7 @@ public class ResumeService {
         ReplyKeyboardRemove removeButton = new ReplyKeyboardRemove();
         removeButton.setSelective(true);
         removeButton.setRemoveKeyboard(true);
-        sendMessage.setReplyMarkup(userService.cancelButton());
+        sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
         return sendMessage;
     }
 
@@ -120,9 +119,9 @@ public class ResumeService {
     }
 
     public SendMessage setEmployeeName(Message message) {
-        mapRepository.currentResume.get(message.getChatId()).setEmployeeName(message.getText());
+        MapRepository.currentResume.get(message.getChatId()).setEmployeeName(message.getText());
         /**   get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+        ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
         //.........................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
@@ -141,11 +140,11 @@ public class ResumeService {
 
     public EditMessageText setResumeRegion(CallbackQuery callbackQuery) {
         /** set region to vacancy */
-        mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkRegion(callbackQuery.getData());
+        MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkRegion(callbackQuery.getData());
         /**  remove regions and show districts BUTTONS  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
-        editMessageText.setText("\uD83D\uDD30 Rezyume joylash \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + mapRepository.currentResume.get(callbackQuery.getFrom().getId()).getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + callbackQuery.getData() + ",  ...");
+        editMessageText.setText("\uD83D\uDD30 Rezyume joylash \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + MapRepository.currentResume.get(callbackQuery.getFrom().getId()).getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + callbackQuery.getData() + ",  ...");
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         /**  . .make distinct buttons  */
         editMessageText.setReplyMarkup(InlineKeyBoardUtil.districtButtons(callbackQuery));
@@ -154,9 +153,9 @@ public class ResumeService {
 
     public EditMessageText setResumeDistinct(CallbackQuery callbackQuery) {
         /** set distinct to vacancy */
-        mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkDistinct(callbackQuery.getData());
+        MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkDistinct(callbackQuery.getData());
         /**  get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(callbackQuery.getFrom().getId());
+        ResumeDTO dto = MapRepository.currentResume.get(callbackQuery.getFrom().getId());
         //...............................................//
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
@@ -178,11 +177,11 @@ public class ResumeService {
 
     public EditMessageText setSpecialty1(CallbackQuery callbackQuery) {
         /** set specialty to vacancy */
-        mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty1(callbackQuery.getData());
+        MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty1(callbackQuery.getData());
         /**  remove Sspecialty(1) button and show specialty(2) buttons  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
-        ResumeDTO dto = mapRepository.currentResume.get(callbackQuery.getFrom().getId());
+        ResumeDTO dto = MapRepository.currentResume.get(callbackQuery.getFrom().getId());
         //...............................................................//
         editMessageText.setText("\uD83D\uDD30 Rezyume joylash \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + callbackQuery.getData() + ", ...");
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
@@ -193,9 +192,9 @@ public class ResumeService {
 
     public EditMessageText setSpecialty2(CallbackQuery callbackQuery) {
         /** set specialty to vacancy */
-        mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty2(callbackQuery.getData());
+        MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty2(callbackQuery.getData());
         /**  get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(callbackQuery.getFrom().getId());
+        ResumeDTO dto = MapRepository.currentResume.get(callbackQuery.getFrom().getId());
         //...............................................//
         /**  remove Sspecialty(1) button and show specialty(2) buttons  */
         EditMessageText editMessageText = new EditMessageText();
@@ -216,7 +215,7 @@ public class ResumeService {
 
     public SendMessage setTechnologies(Message message) {
         /**   get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+        ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
         //.......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
@@ -224,7 +223,7 @@ public class ResumeService {
             sendMessage.setText("⚠\uFE0F Rezyume aniq va tushunarli bo'lishi uchun ko'proq ma'lumot kiriting.\n\n✍\uD83C\uDFFB . . .");
         } else {
             /**  set technologies to vacancy */
-            mapRepository.currentResume.get(message.getChatId()).setTechnologies(message.getText());
+            MapRepository.currentResume.get(message.getChatId()).setTechnologies(message.getText());
             if (dto.getSalary() == null) {
                 /**  "enter work time" msg */
                 sendMessage.setText("\uD83D\uDD5E Haftalik ish soati . .");
@@ -241,14 +240,14 @@ public class ResumeService {
 
     public SendMessage setWorkTime(Message message) {
         /**   get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+        ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
         //.......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         if (userService.isDigit(message.getText())) {
             if (Integer.parseInt(message.getText()) >= 7 && Integer.parseInt(message.getText()) <= 70) {
                 /** set setWorkTime to vacancy */
-                mapRepository.currentResume.get(message.getChatId()).setWorkTime(message.getText());
+                MapRepository.currentResume.get(message.getChatId()).setWorkTime(message.getText());
                 if (dto.getSalary() == null) {
                     /**  enter salary msg */
                     sendMessage.setText(" \uD83D\uDD30  Oylik maoshni kiriting  \uD83D\uDD30\n\n‼\uFE0F  so'm yoki dollarda aniq qilib kiriting.");
@@ -270,12 +269,12 @@ public class ResumeService {
 
     public SendMessage setSalary(Message message) {
         /**   get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+        ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
         //..............................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         /** set salary to vacancy */
-        mapRepository.currentResume.get(message.getChatId()).setSalary(message.getText());
+        MapRepository.currentResume.get(message.getChatId()).setSalary(message.getText());
         /**  enter call link msg */
         if (dto.getConnectAddress() == null) {
             sendMessage.setText("\uD83D\uDCE8  Aloqaga chiqish uchun link yoki tel raqam yozib qoldiring.");
@@ -291,12 +290,12 @@ public class ResumeService {
 
     public SendMessage setConnectAddress(Message message) {
         /**   get currentResume */
-        ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+        ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
         //......................................//
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         /** set connect address to vacancy */
-        mapRepository.currentResume.get(message.getChatId()).setConnectAddress(message.getText());
+        MapRepository.currentResume.get(message.getChatId()).setConnectAddress(message.getText());
         if (dto.getExtraInfo() == null) {
             /**  enter extra info msg */
             sendMessage.setText("‼\uFE0F Ish beruvchidan nimalarni talab qilishingiz, o'z ish tajribangiz darajasi,  korxonaga nimalarni taklif qila olasiz va o'zingiz haqida ba'zi ma'lumotlar . .\n" + "Shu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB . . .");
@@ -316,8 +315,8 @@ public class ResumeService {
         /**  check extra info to 128 sybols */
         if (message.getText().length() >= 31) {
             /**  set extra info to vacancy */
-            mapRepository.currentResume.get(message.getChatId()).setExtraInfo(message.getText());
-            ResumeDTO dto = mapRepository.currentResume.get(message.getChatId());
+            MapRepository.currentResume.get(message.getChatId()).setExtraInfo(message.getText());
+            ResumeDTO dto = MapRepository.currentResume.get(message.getChatId());
             sendMessage.setText("\uD83D\uDD30 Rezyume \uD83D\uDD30\n\n" + "\uD83D\uDC64 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());
             /** change user's step */
@@ -336,7 +335,7 @@ public class ResumeService {
         user.setStep(UserStep.EDIT_RESUME);
         userService.update(user);
         /**  get currentResume to DTO */
-        ResumeDTO dto = mapRepository.currentResume.get(callbackQuery.getFrom().getId());
+        ResumeDTO dto = MapRepository.currentResume.get(callbackQuery.getFrom().getId());
         /** send total Vacancy Msg  */
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
@@ -358,32 +357,32 @@ public class ResumeService {
         editMessageText.setChatId(callbackQuery.getFrom().getId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (data.equals("employeeName")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setEmployeeName(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setEmployeeName(null);
             editMessageText.setText("\uD83D\uDC64 Ism : ...");
         } else if (data.equals("address")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkRegion(null);
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkDistinct(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkRegion(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkDistinct(null);
             editMessageText.setText("\uD83D\uDDFA  Manzil : ...");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.regionsButtons());
         } else if (data.equals("specialty")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty1(null);
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty2(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty1(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSpecialty2(null);
             editMessageText.setText("\uD83D\uDCCB  Yo'nalish : ...");
             editMessageText.setReplyMarkup(InlineKeyBoardUtil.specialtyButtons());
         } else if (data.equals("technologies")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setTechnologies(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setTechnologies(null);
             editMessageText.setText("❇\uFE0F  Texnologiyalar : ...");
         } else if (data.equals("workTime")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkTime(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setWorkTime(null);
             editMessageText.setText("\uD83D\uDD5E  Haftalik ish soati : ...");
         } else if (data.equals("salary")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSalary(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setSalary(null);
             editMessageText.setText("\uD83D\uDCB0  Maosh : ...");
         } else if (data.equals("callAddress")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setConnectAddress(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setConnectAddress(null);
             editMessageText.setText("\uD83D\uDCE8  Aloqaga chiqish uchun link yoki tel raqam yozib qoldiring.");
         } else if (data.equals("extraInfo")) {
-            mapRepository.currentResume.get(callbackQuery.getFrom().getId()).setExtraInfo(null);
+            MapRepository.currentResume.get(callbackQuery.getFrom().getId()).setExtraInfo(null);
             editMessageText.setText("‼\uFE0F  Ish beruvchidan nimalarni talab qilishingiz, o'z ish tajribangiz darajasi,  korxonaga nimalarni taklif qila olasiz va o'zingiz haqida ba'zi ma'lumotlar . .\n" + "Shu kabi ma'lumotlarni kiritishingizni iltimos qilamiz.\n\n✍\uD83C\uDFFB . . .");
         }
         return editMessageText;
@@ -400,7 +399,7 @@ public class ResumeService {
         editMessageText.setText("❌  Rezyume bekor qilindi.");
         editMessageText.setMessageId(message.getMessageId());
         /**  remove vacancy from HashMap   */
-        mapRepository.currentResume.remove(message.getChatId());
+        MapRepository.currentResume.remove(message.getChatId());
         return editMessageText;
     }
 
@@ -410,7 +409,7 @@ public class ResumeService {
         user.setStep(UserStep.END);
         userService.update(user);
         /**  get currentResume to DTO */
-        ResumeDTO dto = mapRepository.currentResume.get(callbackQuery.getFrom().getId());
+        ResumeDTO dto = MapRepository.currentResume.get(callbackQuery.getFrom().getId());
         /**  create vacancyEntity */
         ResumeEntity entity = new ResumeEntity();
         /** setting vacancy's fields */
@@ -433,7 +432,7 @@ public class ResumeService {
         dto.setId(entity.getId());
         dto.setCreatedDate(entity.getCreatedDate());
         /**  remove vacancy from HashMap    */
-        mapRepository.currentResume.remove(callbackQuery.getFrom().getId());
+        MapRepository.currentResume.remove(callbackQuery.getFrom().getId());
         return dto;
     }
 

@@ -8,13 +8,11 @@ import uz.code.ishvakansiyabot.entity.UserEntity;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserStep;
 
-import java.util.Optional;
-
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
     UserEntity findByTgId(Long id);
 
     @Transactional
     @Modifying
-    @Query("update UserEntity set step =?2 where tgId =?1 ")
-    int changeUserStep(Long id, UserStep step);
+    @Query("update UserEntity set step =?2 where tgId =?1")
+    void changeUserStep(Long id, UserStep step);
 }

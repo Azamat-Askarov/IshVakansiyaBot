@@ -32,7 +32,7 @@ public class AuthService {
         SendMessage sendFirstMessage = new SendMessage();
         sendFirstMessage.setChatId(user.getId());
         sendFirstMessage.setReplyMarkup(InlineKeyBoardUtil.signUpOrAboutBotButton());
-        sendFirstMessage.setText("\uD83D\uDC4B\uD83C\uDFFB Assalomu alaykum.\n" + "\uD83D\uDD0D Botimiz orqali o'zingizga mos ish topishingiz yoki ma'lum bir yo'nalishda" + " xodim kerak bo'lsa vakansiya joylashtirishingiz mumkin.\n" + "\uD83D\uDCF2 Botdan ro'yxatdan o'ting va bot imkoniyatlaridan to'liq foydalaning.");
+        sendFirstMessage.setText("\uD83D\uDC4B\uD83C\uDFFB Assalomu alaykum.\n" + "\uD83D\uDD0D Botimiz orqali o'zingizga mos ish topishingiz yoki ma'lum bir yo'nalishda xodim kerak bo'lsa vakansiya joylashtirishingiz mumkin.\n" + "\uD83D\uDCF2 Botdan ro'yxatdan o'ting va bot imkoniyatlaridan to'liq foydalaning.");
         return sendFirstMessage; //
     }
 
@@ -136,11 +136,13 @@ public class AuthService {
         if (callbackQuery.getData().equals("accept")) {
             currentUser.setStep(UserStep.END);
             currentUser.setStatus(GeneralStatus.ACTIVE);
-            currentUser.setCreatedDate(LocalDateTime.now());
+            String createdDate = String.valueOf(LocalDateTime.now());
+            String s = createdDate.substring(0, 10) + " " + createdDate.substring(11, 16);
+            currentUser.setCreatedDate(s);
             userService.update(currentUser);
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMsg.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Ro'yxatdan o'tgan vaqt : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
+            editMsg.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Created date : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
         } else if (callbackQuery.getData().equals("edit")) {
             currentUser.setName(null);
             currentUser.setAge(null);

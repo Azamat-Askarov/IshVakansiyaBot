@@ -159,6 +159,9 @@ public class InlineKeyBoardUtil {
 
     public static InlineKeyboardMarkup editingResumeButtons() {
         return InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDC64 Ism", "employeeName")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDDFA Manzil", "address")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDCCB Yo'nalish", "specialty")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("❇\uFE0F Texnologiya va kasbiy ko'nikmalar", "technologies")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDCB0 Maosh", "salary")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDD5E Haftalik ish soati", "workTime")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("\uD83D\uDCF1 Aloqa", "callAddress")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("‼\uFE0F Qo'shimcha", "extraInfo"))));
+    }
 
+    public static InlineKeyboardMarkup searchButtons() {
+        return InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Yo'nalish", "search1")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Yo'nalish, Viloyat", "search2")), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Yo'nalish, Viloyat, Tuman", "search3"))));
     }
 }

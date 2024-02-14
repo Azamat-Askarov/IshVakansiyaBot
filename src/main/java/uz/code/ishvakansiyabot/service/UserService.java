@@ -15,15 +15,10 @@ import uz.code.ishvakansiyabot.repository.MapRepository;
 import uz.code.ishvakansiyabot.repository.ResumeRepository;
 import uz.code.ishvakansiyabot.repository.UserRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
-
-
-import java.util.*;
-
+import uz.code.ishvakansiyabot.util.ReplyButtons;
 
 @Service
 public class UserService {
-    @Autowired
-    MapRepository mapRepository;
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -81,112 +76,36 @@ public class UserService {
         update(dto);
     }
 
+    public void changeStep(Long userId, UserStep userStep) {
+        userRepository.changeUserStep(userId, userStep);
+    }
+
     public SendMessage cancelPosting(UserDTO currentUser) {
-        userRepository.changeUserStep(currentUser.getTgId(), UserStep.END);
+        changeStep(currentUser.getTgId(), UserStep.END);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(currentUser.getTgId());
-        if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
+        if (currentUser.getStep().equals(UserStep.ADD_RESUME) || currentUser.getStep().equals(UserStep.ACCEPTING_RESUME) || currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
+            sendMessage.setText("❌ Rezyume bekor qilindi.");
             /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
+            MapRepository.currentResume.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY) || currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY) || currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
+            sendMessage.setText("❌ Vakansiya bekor qilindi.");
             /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.ACCEPTING_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.EDIT_VACANCY)) {
-            sendMessage.setText("❌ Vakansiya yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentVacancy.remove(currentUser.getTgId());
-        } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
-            sendMessage.setText("❌ Rezyume yuklash bekor qilindi.");
-            /**   remove vacancy from vacancyMap */
-            mapRepository.currentResume.remove(currentUser.getTgId());
+            MapRepository.currentVacancy.remove(currentUser.getTgId());
+        } else if (currentUser.getStep().equals(UserStep.SEARCH_VACANCY) || currentUser.getStep().equals(UserStep.SEARCH_RESUME)) {
+            sendMessage.setText("❌ Qidiruv bekor qilindi.");
+            /**   remove user from searcherMap */
+            MapRepository.currentSearcherMap.remove(currentUser.getTgId());
         }
-        sendMessage.setReplyMarkup(mainMenuButtons());
+        sendMessage.setReplyMarkup(ReplyButtons.mainMenuButtons());
         //..................................................//
         if (currentUser.getStep().equals(UserStep.CREATING) || currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
             sendMessage.setText("❌ Ro'yxatdan o'tish bekor qilindi.");
-            sendMessage.setReplyMarkup(startButton());
+            sendMessage.setReplyMarkup(ReplyButtons.startButton());
             /** delete user from DB */
             delete(currentUser.getTgId());
         }
 
         return sendMessage;
-    }
-
-    public ReplyKeyboardMarkup mainMenuButtons() {
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        keyboardMarkup.setResizeKeyboard(true);
-        keyboardMarkup.setOneTimeKeyboard(true);
-        keyboardMarkup.setSelective(true);
-
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add("Vakansiya joylashㅤ");
-        row1.add("Rezyume joylashㅤ");
-
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add("Vakansiya izlashㅤ");
-        row2.add("Rezyume izlashㅤ");
-
-        KeyboardRow row3 = new KeyboardRow();
-        row3.add("Mening vakansiyalarimㅤ");
-        row3.add("Mening rezyumelarimㅤ");
-
-        KeyboardRow row4 = new KeyboardRow();
-        row4.add("Sozlamalarㅤ");
-
-        KeyboardRow row5 = new KeyboardRow();
-        row5.add("Admin/Bot supportㅤ");
-
-        keyboard.add(row1);
-        keyboard.add(row2);
-        keyboard.add(row3);
-        keyboard.add(row4);
-        keyboard.add(row5);
-        keyboardMarkup.setKeyboard(keyboard);
-
-        return keyboardMarkup;
-    }
-
-    public ReplyKeyboardMarkup cancelButton() {
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        keyboardMarkup.setResizeKeyboard(true);
-        keyboardMarkup.setOneTimeKeyboard(true);
-        keyboardMarkup.setSelective(true);
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add("Bekor qilishㅤ");
-        keyboard.add(row1);
-        keyboardMarkup.setKeyboard(keyboard);
-        return keyboardMarkup;
-    }
-
-    public ReplyKeyboardMarkup startButton() {
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        keyboardMarkup.setResizeKeyboard(true);
-        keyboardMarkup.setOneTimeKeyboard(true);
-        keyboardMarkup.setSelective(true);
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add("/start");
-        keyboard.add(row1);
-        keyboardMarkup.setKeyboard(keyboard);
-        return keyboardMarkup;
-    }
-
-    public ReplyKeyboardRemove removeButton() {
-        ReplyKeyboardRemove removeButton = new ReplyKeyboardRemove();
-        removeButton.setSelective(true);
-        removeButton.setRemoveKeyboard(true);
-        return removeButton;
     }
 }
