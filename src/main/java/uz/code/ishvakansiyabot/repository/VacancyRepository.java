@@ -17,14 +17,12 @@ public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer
 
     List<VacancyEntity> findByEmployerIdAndStatus(Long id, GeneralStatus generalStatus);
 
-    List<VacancyEntity> findAllByStatus(GeneralStatus generalStatus);
-
-    List<VacancyEntity> findBySpecialty2(String specialty2);
+    List<VacancyEntity> findBySpecialty2AndStatus(String specialty2, GeneralStatus generalStatus);
 
 
-    List<VacancyEntity> findByWorkRegionAndSpecialty2(String workRegion, String specialty2);
+    List<VacancyEntity> findByWorkRegionAndSpecialty2AndStatus(String workRegion, String specialty2, GeneralStatus generalStatus);
 
-    List<VacancyEntity> findByWorkDistinctAndSpecialty2(String workDistinct, String specialty2);
+    List<VacancyEntity> findByWorkDistinctAndSpecialty2AndStatus(String workDistinct, String specialty2, GeneralStatus generalStatus);
 
     @Transactional
     @Modifying

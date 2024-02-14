@@ -13,4 +13,5 @@ public class MapRepository {
     public static Map<Long, ResumeDTO> currentResume = new HashMap<>();
     public static Map<Long, SearcherDTO> currentSearcherMap = new HashMap<>();
     public static Map<Long, List<VacancyDTO>> searchVacancyResultMap = new HashMap<>();
+    public static Map<Long, List<ResumeDTO>> searchResumeResultMap = new HashMap<>();
 }

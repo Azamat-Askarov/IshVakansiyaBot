@@ -14,10 +14,10 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.code.ishvakansiyabot.config.BotConfig;
 import uz.code.ishvakansiyabot.dto.ResumeDTO;
-import uz.code.ishvakansiyabot.dto.SearcherDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
+import uz.code.ishvakansiyabot.enums.SearchPostType;
 import uz.code.ishvakansiyabot.enums.UserStep;
 import uz.code.ishvakansiyabot.repository.MapRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
@@ -140,6 +140,13 @@ public class MainController extends TelegramLongPollingBot {
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(vacancyService.createSearchMethod(currentUser.getTgId()));
+            } else if (message.getText().equals("Rezyume izlashㅤ")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(currentUser.getTgId());
+                sendMessage.setText("\uD83D\uDD30  Rezyume izlash  \uD83D\uDD30");
+                sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
+                sendMsg(sendMessage);
+                sendMsg(resumeService.createSearchMethod(currentUser.getTgId()));
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -199,12 +206,27 @@ public class MainController extends TelegramLongPollingBot {
                 } else if (callbackQuery.getData().startsWith("getLessNewResume")) {
                     sendEditMsg(resumeService.getById(callbackQuery));
                 } else if (callbackQuery.getData().startsWith("getPage")) {
-                    sendEditMsg(vacancyService.searchVacancyTotalMsg(callbackQuery));
+                    if (MapRepository.currentSearcherMap.get(currentUser.getTgId()).getSearchPostType().equals(SearchPostType.VACANCY)) {
+                        sendEditMsg(vacancyService.searchVacancyTotalMsg(callbackQuery));
+                    } else if (MapRepository.currentSearcherMap.get(currentUser.getTgId()).getSearchPostType().equals(SearchPostType.RESUME)) {
+                        sendEditMsg(resumeService.searchResumeTotalMsg(callbackQuery));
+                    }
                 } else if (callbackQuery.getData().startsWith("getLessSearchVacancy")) {
                     sendMsg(vacancyService.getSearchResultVacancy(callbackQuery));
+                } else if (callbackQuery.getData().startsWith("getLessSearchResume")) {
+                    sendMsg(resumeService.getSearchResultResume(callbackQuery));
                 }
             } else if (currentUser.getStep().equals(UserStep.SEARCH_VACANCY)) {
                 sendEditMsg(vacancyService.search(callbackQuery));
+                if (userService.getById(currentUser.getTgId()).getStep().equals(UserStep.END)) {
+                    SendMessage send = new SendMessage();
+                    send.setChatId(callbackQuery.getFrom().getId());
+                    send.setText(" .  .  .");
+                    send.setReplyMarkup(ReplyButtons.mainMenuButtons());
+                    sendMsg(send);
+                }
+            } else if (currentUser.getStep().equals(UserStep.SEARCH_RESUME)) {
+                sendEditMsg(resumeService.search(callbackQuery));
                 if (userService.getById(currentUser.getTgId()).getStep().equals(UserStep.END)) {
                     SendMessage send = new SendMessage();
                     send.setChatId(callbackQuery.getFrom().getId());

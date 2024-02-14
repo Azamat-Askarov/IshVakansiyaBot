@@ -126,11 +126,11 @@ public class VacancyService {
         SearchMethodType searchMethodType = searcherDTO.getSearchMethodType();
         List<VacancyEntity> vacancyEntityList = new LinkedList<>();
         if (searchMethodType.equals(SearchMethodType.SEARCH1)) {
-            vacancyEntityList = vacancyRepository.findBySpecialty2(searcherDTO.getSpecialty2());
+            vacancyEntityList = vacancyRepository.findBySpecialty2AndStatus(searcherDTO.getSpecialty2(), GeneralStatus.ACTIVE);
         } else if (searchMethodType.equals(SearchMethodType.SEARCH2)) {
-            vacancyEntityList = vacancyRepository.findByWorkRegionAndSpecialty2(searcherDTO.getRegion(), searcherDTO.getSpecialty2());
+            vacancyEntityList = vacancyRepository.findByWorkRegionAndSpecialty2AndStatus(searcherDTO.getRegion(), searcherDTO.getSpecialty2(), GeneralStatus.ACTIVE);
         } else if (searchMethodType.equals(SearchMethodType.SEARCH3)) {
-            vacancyEntityList = vacancyRepository.findByWorkDistinctAndSpecialty2(searcherDTO.getDistinct(), searcherDTO.getSpecialty2());
+            vacancyEntityList = vacancyRepository.findByWorkDistinctAndSpecialty2AndStatus(searcherDTO.getDistinct(), searcherDTO.getSpecialty2(), GeneralStatus.ACTIVE);
         }
         List<VacancyDTO> vacancyDTOList = new LinkedList<>();
         for (VacancyEntity entity : vacancyEntityList) {
