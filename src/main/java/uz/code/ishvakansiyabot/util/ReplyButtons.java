@@ -1,5 +1,6 @@
 package uz.code.ishvakansiyabot.util;
 
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -31,7 +32,7 @@ public class ReplyButtons {
         row4.add("Sozlamalarㅤ");
 
         KeyboardRow row5 = new KeyboardRow();
-        row5.add("Admin/Bot supportㅤ");
+        row5.add("Adminㅤ");
 
         keyboard.add(row1);
         keyboard.add(row2);
@@ -74,5 +75,26 @@ public class ReplyButtons {
         removeButton.setSelective(true);
         removeButton.setRemoveKeyboard(true);
         return removeButton;
+    }
+
+    public static ReplyKeyboard acceptingButtons() {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        keyboardMarkup.setResizeKeyboard(true);
+        keyboardMarkup.setOneTimeKeyboard(true);
+        keyboardMarkup.setSelective(true);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row1 = new KeyboardRow();
+        row1.add("✅ Tasdiqlashㅤ");
+        row1.add("⚠\uFE0F Tahrirlashㅤ");
+
+        KeyboardRow row2 = new KeyboardRow();
+        row2.add("Bekor qilishㅤ");
+
+        keyboard.add(row1);
+        keyboard.add(row2);
+
+        keyboardMarkup.setKeyboard(keyboard);
+        return keyboardMarkup;
     }
 }

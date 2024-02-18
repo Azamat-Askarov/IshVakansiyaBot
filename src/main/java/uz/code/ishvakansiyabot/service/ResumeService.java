@@ -79,7 +79,7 @@ public class ResumeService {
             Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
             ResumeEntity entity = optional.get();
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreResume" + entity.getId())))));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreResume" + entity.getId())))));
         } else if (callbackQuery.getData().startsWith("getMoreNewResume")) {
             /**  get resumeId from callBackQuery */
             resumeId = Integer.parseInt(callbackQuery.getData().substring(16));
@@ -95,7 +95,7 @@ public class ResumeService {
             Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
             ResumeEntity entity = optional.get();
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewResume" + entity.getId())))));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewResume" + entity.getId())))));
         }
         return editMessageText;
     }
@@ -111,7 +111,7 @@ public class ResumeService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(userId);
             sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + date.substring(0, 10) + " " + date.substring(11, 16));
-            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreResume" + entity.getId())))));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreResume" + entity.getId())))));
             resumeMsgList.add(sendMessage);
         }
         if (resumeMsgList.isEmpty()) {
@@ -470,7 +470,7 @@ public class ResumeService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(employerList.get(i));
             sendMessage.setText("#" + dto.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + dto.getEmployeeName() + "\n❇\uFE0F Texnologiyalar : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDDD3 Created date : " + dto.getCreatedDate());
-            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewResume" + dto.getId())))));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewResume" + dto.getId())))));
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;
@@ -680,7 +680,7 @@ public class ResumeService {
         /**  get created date */
         String date = String.valueOf(entity.getCreatedDate());
         sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-        sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewResume" + entity.getId())))));
+        sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewResume" + entity.getId())))));
         return sendMessage;
     }
 }

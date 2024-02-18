@@ -7,13 +7,11 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.code.ishvakansiyabot.config.BotConfig;
 import uz.code.ishvakansiyabot.dto.ResumeDTO;
+import uz.code.ishvakansiyabot.dto.SendMsgDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
@@ -147,6 +145,15 @@ public class MainController extends TelegramLongPollingBot {
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(resumeService.createSearchMethod(currentUser.getTgId()));
+            } else if (message.getText().equals("Adminㅤ")) {
+                sendMsg(userService.botSupport(message));
+            } else if (currentUser.getStep().equals(UserStep.SEND_FEEDBACK)) {
+                sendMsgDTO(userService.sendFeedback(message));
+                if (userService.getById(message.getChatId()).getStep().equals(UserStep.END)) {
+                    sendMsgDTO(MapRepository.currentFeedbackMap.get(user.getId()));
+                }
+            } else if (message.getText().equals("Sozlamalarㅤ")) {
+
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -165,7 +172,7 @@ public class MainController extends TelegramLongPollingBot {
                     signingUpEditMsg.setMessageId(callbackQuery.getMessage().getMessageId());
                     signingUpEditMsg.setChatId(callbackQuery.getFrom().getId());
                     sendEditMsg(signingUpEditMsg);
-                    /** set default fields */
+                    /**   set default fields */
                     authService.create(user.getId());
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setText("✍\uD83C\uDFFB Ismingiz . .");
@@ -337,6 +344,24 @@ public class MainController extends TelegramLongPollingBot {
             } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
                 sendEditMsg(resumeService.editResume(callbackQuery));
             }
+        }
+    }
+
+    public void sendMsgDTO(SendMsgDTO sendMsgDTO) {
+        try {
+            if (sendMsgDTO.getText() != null) {
+                execute(sendMsgDTO.getText());
+            } else if (sendMsgDTO.getEditText() != null) {
+                execute(sendMsgDTO.getEditText());
+            } else if (sendMsgDTO.getPhoto() != null) {
+                execute(sendMsgDTO.getPhoto());
+            } else if (sendMsgDTO.getVideo() != null) {
+                execute(sendMsgDTO.getVideo());
+            } else if (sendMsgDTO.getAudio() != null) {
+                execute(sendMsgDTO.getAudio());
+            }
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 

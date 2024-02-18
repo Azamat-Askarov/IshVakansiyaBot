@@ -192,7 +192,7 @@ public class VacancyService {
                 }
                 VacancyDTO dto = new VacancyDTO();
                 dto = currentPageList.get(i);
-                msg += (i + 1) + ". Korxona : " + dto.getEmployerName() + ",   Maosh : " + dto.getSalary() + "\n";
+                msg += (i + 1) + ". Ish beruvchi : " + dto.getEmployerName() + ",  Lavozim : " + dto.getPosition() + ",   Maosh : " + dto.getSalary() + "\n";
             }
         }
         /**   make searchResultButtons */
@@ -612,7 +612,7 @@ public class VacancyService {
             /**  get created date */
             String date = String.valueOf(entity.getCreatedDate());
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreVacancy" + entity.getId())))));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreVacancy" + entity.getId())))));
         } else if (callbackQuery.getData().startsWith("getMoreNewVacancy")) {
             vacancyId = Integer.parseInt(callbackQuery.getData().substring(17));
             /**  get vacancyEntity from DB */
@@ -628,7 +628,7 @@ public class VacancyService {
             /**  get created date */
             String date = String.valueOf(entity.getCreatedDate());
             editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewVacancy" + entity.getId())))));
+            editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewVacancy" + entity.getId())))));
         }
         return editMessageText;
     }
@@ -642,7 +642,7 @@ public class VacancyService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(userId);
             sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + entity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
-            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreVacancy" + entity.getId())))));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreVacancy" + entity.getId())))));
             vacancyMsgList.add(sendMessage);
         }
         if (vacancyMsgList.isEmpty()) {
@@ -662,7 +662,7 @@ public class VacancyService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(employeeList.get(i));
             sendMessage.setText("#" + dto.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDDD3 Created date : " + dto.getCreatedDate());
-            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewVacancy" + dto.getId())))));
+            sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewVacancy" + dto.getId())))));
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;
