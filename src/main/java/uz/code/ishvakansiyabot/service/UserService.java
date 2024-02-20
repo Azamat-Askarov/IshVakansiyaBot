@@ -14,11 +14,13 @@ import uz.code.ishvakansiyabot.dto.SendMsgDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.entity.UserEntity;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
+import uz.code.ishvakansiyabot.enums.UserRole;
 import uz.code.ishvakansiyabot.enums.UserStep;
 import uz.code.ishvakansiyabot.repository.MapRepository;
 import uz.code.ishvakansiyabot.repository.ResumeRepository;
 import uz.code.ishvakansiyabot.repository.UserRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
+import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
 import uz.code.ishvakansiyabot.util.ReplyButtons;
 
 import java.util.Comparator;
@@ -123,12 +125,7 @@ public class UserService {
         userRepository.changeUserStep(message.getChatId(), UserStep.SEND_FEEDBACK);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("❇\uFE0F Texnik xatolik \n" +
-                "❇\uFE0F Shikoyat yoki taklif \n" +
-                "❇\uFE0F Reklama yoki hamkorlik masalasi\n" +
-                "❇\uFE0F bemani yoki haqoratomuz e'lon\n" +
-                "❇\uFE0F Soxta e'lon yoki shunga o'xshash holat\n" +
-                ". . . . lar haqida ma'murlarga xabar yubormqchi bo'lsangiz bu haqida to'liq va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Admin tez orada sizga javob xabarini yuboradi !\n\n✍\uD83C\uDFFB . . .");
+        sendMessage.setText("❇\uFE0F Texnik xatolik \n" + "❇\uFE0F Shikoyat yoki taklif \n" + "❇\uFE0F Reklama yoki hamkorlik masalasi\n" + "❇\uFE0F Hisobni to'ldirish\n" + "❇\uFE0F bemani yoki haqoratomuz e'lon\n" + "❇\uFE0F Soxta e'lon yoki shunga o'xshash holat\n" + ". . . . lar haqida adminlarga xabar yubormqchi bo'lsangiz bu haqida to'liq va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Adminlarimiz 24 soat ichida sizga javob xabarini yuborishadi !\n\n✍\uD83C\uDFFB . . .");
         sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
         return sendMessage;
     }
@@ -136,14 +133,14 @@ public class UserService {
     public SendMsgDTO sendFeedback(Message message) {
         User user = message.getFrom();
         SendMsgDTO sendMsgDTO = new SendMsgDTO();
-        if (message.getText().equals("✅ Tasdiqlashㅤ")) {
+        if (message.hasText() && message.getText().equals("✅ Tasdiqlashㅤ")) {
             userRepository.changeUserStep(message.getChatId(), UserStep.END);
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(user.getId());
             sendMessage.setText("✅ Xabar adminga yuborildi.");
             sendMessage.setReplyMarkup(ReplyButtons.mainMenuButtons());
             sendMsgDTO.setText(sendMessage);
-        } else if (message.getText().equals("⚠\uFE0F Tahrirlashㅤ")) {
+        } else if (message.hasText() && message.getText().equals("⚠\uFE0F Tahrirlashㅤ")) {
             MapRepository.currentFeedbackMap.remove(user.getId());
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(message.getChatId());
@@ -158,26 +155,12 @@ public class UserService {
                 sendMessage.setText("#feedback  ID: " + message.getChatId() + "\n\n" + message.getText());
                 feedBack.setText(sendMessage);
             } else if (message.hasPhoto()) {
-                var photo = message.getPhoto().stream()
-                        .max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight()))
-                        .orElse(null);
+                var photo = message.getPhoto().stream().max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight())).orElse(null);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setChatId(5952923848L);
                 sendPhoto.setPhoto(new InputFile(photo.getFileId()));
                 sendPhoto.setCaption("#feedback  ID: " + message.getChatId() + "\n\n" + message.getCaption());
                 feedBack.setPhoto(sendPhoto);
-            } else if (message.hasVideo()) {
-                SendVideo sendVideo = new SendVideo();
-                sendVideo.setChatId(5952923848L);
-                sendVideo.setCaption("#feedback  ID: " + message.getChatId() + "\n\n" + message.getCaption());
-                sendVideo.setVideo(new InputFile(message.getVideo().getFileId()));
-                feedBack.setVideo(sendVideo);
-            } else if (message.hasAudio()) {
-                SendAudio sendAudio = new SendAudio();
-                sendAudio.setChatId(5952923848L);
-                sendAudio.setCaption("#feedback  ID: " + message.getChatId() + "\n\n" + message.getCaption());
-                sendAudio.setAudio(new InputFile(message.getAudio().getFileId()));
-                feedBack.setAudio(sendAudio);
             }
             MapRepository.currentFeedbackMap.put(user.getId(), feedBack);
             SendMessage sendMessage = new SendMessage();
@@ -187,5 +170,102 @@ public class UserService {
             sendMsgDTO.setText(sendMessage);
         }
         return sendMsgDTO;
+    }
+
+    public SendMessage settings(Message message) {
+        userRepository.changeUserStep(message.getChatId(), UserStep.SETTINGS);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Sozlamalar");
+        sendMessage.setReplyMarkup(ReplyButtons.settingsButtons());
+        return sendMessage;
+    }
+
+    public SendMsgDTO statistics(Message message) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Foydalanuvchilar : " + userRepository.countAllUsers() + " ta\nActive : " + userRepository.countActiveUsers() + " ta\nNot Active : " + userRepository.countDeletedUsers() + " ta\n\nVakansiyalar : " + vacancyRepository.countAllVacancies() + " ta\nActive : " + vacancyRepository.countActiveVacancies() + " ta\nDeleted : " + vacancyRepository.countDeletedVacancies() + " ta\n\nRezyumelar : " + resumeRepository.countAllResumes() + " ta\nActive : " + resumeRepository.countActiveResumes() + " ta\nDeleted : " + resumeRepository.countDeletedResumes() + " ta");
+        SendMsgDTO sendMsgDTO = new SendMsgDTO();
+        sendMsgDTO.setText(sendMessage);
+        return sendMsgDTO;
+    }
+
+    public SendMsgDTO getProfile(Message message) {
+        userRepository.changeUserStep(message.getChatId(), UserStep.PROFILE);
+        UserDTO dto = getById(message.getChatId());
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Bot ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + "\n\uD83D\uDD37 Created date : " + dto.getCreatedDate() + "\n\uD83D\uDD36 Vakansiyalar : " + userRepository.countAllVacanciesFromUser(message.getChatId()) + "\n\uD83D\uDD37 Rezyumelar : " + userRepository.countAllResumesFromUser(message.getChatId()) + "\n\nHisobingizni to'ldirish uchun ixtiyoriy mobile app yordamida  ushbu  5614680004553372  karta raqamiga pul o'tkazing va botning \"Admin\" bo'limiga kirib check skrinshotini yuboring. Adminlarimiz check skrishotni 24 soat ichida ko'rib chiqishadi va tasdiqlansa pul sizning hisobingizga qo'shiladi.");
+        sendMessage.setReplyMarkup(ReplyButtons.profileButtons());
+        SendMsgDTO sendMsgDTO = new SendMsgDTO();
+        sendMsgDTO.setText(sendMessage);
+        return sendMsgDTO;
+    }
+
+    public SendMsgDTO editProfile(Message message) {
+        userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_PROFILE);
+        UserDTO dto = getById(message.getChatId());
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Profilni tahrirlash");
+        sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
+        SendMsgDTO sendMsgDTO = new SendMsgDTO();
+        sendMsgDTO.setText(sendMessage);
+        return sendMsgDTO;
+    }
+
+    public SendMsgDTO deleteProfile(Message message) {
+        SendMsgDTO sendMsgDTO = new SendMsgDTO();
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        if (message.getText().equals("✅ Tasdiqlashㅤ")) {
+            userRepository.changeUserName(message.getChatId(), null);
+            userRepository.changeUserAge(message.getChatId(), null);
+            userRepository.changeUserAddress(message.getChatId(), null);
+            userRepository.changeUserStatus(message.getChatId(), GeneralStatus.DELETED);
+            vacancyRepository.changeVacanciesStatusByEmployerId(message.getChatId(), GeneralStatus.DELETED);
+            resumeRepository.changeResumesStatusByEmployeeId(message.getChatId(), GeneralStatus.DELETED);
+            sendMessage.setText("Account has been deleted. !!");
+            sendMessage.setReplyMarkup(ReplyButtons.startButton());
+            sendMsgDTO.setText(sendMessage);
+        } else {
+            userRepository.changeUserStep(message.getChatId(), UserStep.DELETING_PROFILE);
+            sendMessage.setText("Profilni o'chirish");
+            sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
+            sendMsgDTO.setText(sendMessage);
+        }
+        return sendMsgDTO;
+    }
+
+    public SendMessage setName(String text, Long tgId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(tgId);
+        if (text.contains("0") || text.contains("1") || text.contains("2") || text.contains("3") || text.contains("4") || text.contains("5") || text.contains("6") || text.contains("7") || text.contains("8") || text.contains("9")) {
+            sendMessage.setText("⚠\uFE0F Raqamlardan foydalanmang.\n\n✍\uD83C\uDFFB Ismingiz . .");
+        } else if (text.length() < 3 || text.length() > 16) {
+            sendMessage.setText("⚠\uFE0F Ism uzunligi [3 ; 16] oraliqda bo'lsin\n✍\uD83C\uDFFB Ismingiz . .");
+        } else {
+            userRepository.changeUserName(tgId, text);
+            sendMessage.setText("Ism o'zgartirildi");
+            sendMessage.setChatId(tgId);
+            sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
+            userRepository.changeUserStep(tgId, UserStep.EDIT_PROFILE);
+        }
+        return sendMessage;
+    }
+
+    public SendMessage setAge(String text, Long tgId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(tgId);
+        if (isDigit(text) && Long.parseLong(text) >= 10 && Long.parseLong(text) <= 60) {
+            userRepository.changeUserAge(tgId, text);
+            sendMessage.setText("Yosh o'zgartirildi");
+            sendMessage.setChatId(tgId);
+            sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
+            userRepository.changeUserStep(tgId, UserStep.EDIT_PROFILE);
+        } else {
+            sendMessage.setText("⚠\uFE0F Yoshingizni to'g'ri kiriting . .");
+        }
+        return sendMessage;
     }
 }

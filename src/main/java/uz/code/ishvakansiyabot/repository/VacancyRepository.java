@@ -31,6 +31,21 @@ public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer
 
     @Transactional
     @Modifying
+    @Query("update VacancyEntity set status =?2 where employerId =?1 ")
+    void changeVacanciesStatusByEmployerId(Long id, GeneralStatus status);
+
+    @Transactional
+    @Modifying
     @Query("select employerId from VacancyEntity where workRegion =?1 and specialty2 =?2 and status =?3")
     List<Long> getEmployerIdByWorkRegionAndSpecialty2AndStatus(String region, String specialty2, GeneralStatus generalStatus);
+
+    @Query("select count(tg_id)from VacancyEntity tg_id")
+    Integer countAllVacancies();
+
+    @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status = 'ACTIVE' ")
+    Integer countActiveVacancies();
+
+    @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status = 'DELETED' ")
+    Integer countDeletedVacancies();
+
 }

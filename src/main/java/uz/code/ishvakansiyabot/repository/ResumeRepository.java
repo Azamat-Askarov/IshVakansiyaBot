@@ -30,6 +30,21 @@ public interface ResumeRepository extends CrudRepository<ResumeEntity, Integer> 
 
     @Transactional
     @Modifying
+    @Query("update ResumeEntity set status =?2 where employeeId =?1 ")
+    void changeResumesStatusByEmployeeId(Long id, GeneralStatus status);
+
+    @Transactional
+    @Modifying
     @Query("select employeeId from ResumeEntity where workRegion =?1 and specialty2 =?2 and status =?3")
     List<Long> getEmployeeIdByWorkRegionAndSpecialty2AndStatus(String region, String specialty2, GeneralStatus generalStatus);
+
+    @Query("select count(r)from ResumeEntity r")
+    Integer countAllResumes();
+
+    @Query("SELECT COUNT(r) FROM ResumeEntity r WHERE r.status = 'ACTIVE' ")
+    Integer countActiveResumes();
+
+    @Query("SELECT COUNT(r) FROM ResumeEntity r WHERE r.status = 'DELETED' ")
+    Integer countDeletedResumes();
+
 }
