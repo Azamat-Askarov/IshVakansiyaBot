@@ -69,11 +69,32 @@ public class MainController extends TelegramLongPollingBot {
                 if (userService.getById(message.getChatId()).getStep().equals(UserStep.END)) {
                     sendMsgDTO(MapRepository.currentFeedbackMap.get(user.getId()));
                 }
-            } else if (message.getText().equals("/start") && currentUser.getStep().equals(UserStep.END)) {
+            } else if (message.getText().equals("/start")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setText("\uD83E\uDDD0?\n .  .  .  .  .\uD83D\uDC47\uD83C\uDFFB");
                 sendMessage.setChatId(user.getId());
-                sendMessage.setReplyMarkup(ReplyButtons.mainMenuButtons());
+                if (currentUser.getStep().equals(UserStep.END)) {
+                    sendMessage.setText("Bosh menyu");
+                    sendMessage.setReplyMarkup(ReplyButtons.mainMenuButtons());
+                } else if (currentUser.getStep().equals(UserStep.SETTINGS)) {
+                    sendMessage.setText("Sozlamalar");
+                    sendMessage.setReplyMarkup(ReplyButtons.settingsButtons());
+                } else if (currentUser.getStep().equals(UserStep.PROFILE) || currentUser.getStep().equals(UserStep.DELETING_PROFILE)) {
+                    sendMessage.setText("\uD83D\uDC64 Profile");
+                    sendMessage.setReplyMarkup(ReplyButtons.profileButtons());
+                } else if (currentUser.getStep().equals(UserStep.EDIT_PROFILE)) {
+                    sendMessage.setText("Profilni tahrirlash");
+                    sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
+                } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY) || currentUser.getStep().equals(UserStep.ACCEPTING_VACANCY) || currentUser.getStep().equals(UserStep.SEARCH_VACANCY) || currentUser.getStep().equals(UserStep.EDIT_VACANCY) || currentUser.getStep().equals(UserStep.ADD_RESUME) || currentUser.getStep().equals(UserStep.ACCEPTING_RESUME) || currentUser.getStep().equals(UserStep.EDIT_RESUME) || currentUser.getStep().equals(UserStep.SEARCH_RESUME)) {
+                    sendMessage.setText(". . . \uD83D\uDC47\uD83C\uDFFB");
+                    sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
+                } else if (currentUser.getStep().equals(UserStep.EDIT_NAME)) {
+                    sendMessage.setText("✍\uD83C\uDFFB Ismingiz . . .");
+                } else if (currentUser.getStep().equals(UserStep.EDIT_AGE)) {
+                    sendMessage.setText("✍\uD83C\uDFFB Yoshingiz . . .");
+                } else if (currentUser.getStep().equals(UserStep.EDIT_ADDRESS)) {
+                    sendMessage.setText("\uD83D\uDDFA Yashash manzilingiz . . .");
+                    sendMessage.setReplyMarkup(ReplyButtons.regionsButtons());
+                }
                 sendMsg(sendMessage);
             } else if (currentUser.getStatus().equals(GeneralStatus.NEW_USER)) {
                 /** begin user registring */
@@ -203,21 +224,21 @@ public class MainController extends TelegramLongPollingBot {
                 if (message.getText().equals("Ismㅤ")) {
                     userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_NAME);
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setText("✍\uD83C\uDFFB Ismingiz . .");
+                    sendMessage.setText("✍\uD83C\uDFFB Ismingiz . . .");
                     sendMessage.setChatId(message.getChatId());
                     sendMessage.setReplyMarkup(ReplyButtons.removeButton());
                     sendMsg(sendMessage);
                 } else if (message.getText().equals("Yoshㅤ")) {
                     userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_AGE);
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setText("✍\uD83C\uDFFB Yoshingiz . .");
+                    sendMessage.setText("✍\uD83C\uDFFB Yoshingiz . . .");
                     sendMessage.setChatId(message.getChatId());
                     sendMessage.setReplyMarkup(ReplyButtons.removeButton());
                     sendMsg(sendMessage);
                 } else if (message.getText().equals("Manzilㅤ")) {
                     userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_ADDRESS);
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setText("✍\uD83C\uDFFB Yashash manzilingiz . .");
+                    sendMessage.setText("\uD83D\uDDFA Yashash manzilingiz . . .");
                     sendMessage.setChatId(message.getChatId());
                     sendMessage.setReplyMarkup(ReplyButtons.regionsButtons());
                     sendMsg(sendMessage);
@@ -230,7 +251,7 @@ public class MainController extends TelegramLongPollingBot {
                 userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_PROFILE);
                 userRepository.changeUserAddress(message.getChatId(), message.getText());
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setText("Manzil o'zgartirildi.");
+                sendMessage.setText("✅ Manzil o'zgartirildi.");
                 sendMessage.setChatId(message.getChatId());
                 sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
                 sendMsg(sendMessage);

@@ -144,7 +144,7 @@ public class UserService {
             MapRepository.currentFeedbackMap.remove(user.getId());
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(message.getChatId());
-            sendMessage.setText("Xabaringizni qaytadan kiriting . . .");
+            sendMessage.setText("Xabaringizni kiriting . . .");
             sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
             sendMsgDTO.setText(sendMessage);
         } else {
@@ -246,7 +246,7 @@ public class UserService {
             sendMessage.setText("⚠\uFE0F Ism uzunligi [3 ; 16] oraliqda bo'lsin\n✍\uD83C\uDFFB Ismingiz . .");
         } else {
             userRepository.changeUserName(tgId, text);
-            sendMessage.setText("Ism o'zgartirildi");
+            sendMessage.setText("✅ Ism o'zgartirildi");
             sendMessage.setChatId(tgId);
             sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
             userRepository.changeUserStep(tgId, UserStep.EDIT_PROFILE);
@@ -259,7 +259,7 @@ public class UserService {
         sendMessage.setChatId(tgId);
         if (isDigit(text) && Long.parseLong(text) >= 10 && Long.parseLong(text) <= 60) {
             userRepository.changeUserAge(tgId, text);
-            sendMessage.setText("Yosh o'zgartirildi");
+            sendMessage.setText("✅ Yosh o'zgartirildi");
             sendMessage.setChatId(tgId);
             sendMessage.setReplyMarkup(ReplyButtons.editProfileButtons());
             userRepository.changeUserStep(tgId, UserStep.EDIT_PROFILE);
