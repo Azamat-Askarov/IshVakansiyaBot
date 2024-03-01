@@ -24,7 +24,6 @@ import uz.code.ishvakansiyabot.service.AuthService;
 import uz.code.ishvakansiyabot.service.ResumeService;
 import uz.code.ishvakansiyabot.service.UserService;
 import uz.code.ishvakansiyabot.service.VacancyService;
-import uz.code.ishvakansiyabot.util.InlineKeyBoardUtil;
 import uz.code.ishvakansiyabot.util.ReplyButtons;
 
 import java.util.List;
@@ -164,14 +163,14 @@ public class MainController extends TelegramLongPollingBot {
             } else if (message.getText().equals("Vakansiya izlashㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
-                sendMessage.setText("\uD83D\uDD30  Vakansiya izlash  \uD83D\uDD30");
+                sendMessage.setText("\uD83D\uDD0D Vakansiya izlash");
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(vacancyService.createSearchMethod(currentUser.getTgId()));
             } else if (message.getText().equals("Rezyume izlashㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
-                sendMessage.setText("\uD83D\uDD30  Rezyume izlash  \uD83D\uDD30");
+                sendMessage.setText("\uD83D\uDD0D Rezyume izlash");
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(resumeService.createSearchMethod(currentUser.getTgId()));
@@ -329,7 +328,7 @@ public class MainController extends TelegramLongPollingBot {
                 if (userService.getById(currentUser.getTgId()).getStep().equals(UserStep.END)) {
                     SendMessage send = new SendMessage();
                     send.setChatId(callbackQuery.getFrom().getId());
-                    send.setText("Bosh menyu \uD83D\uDC47\uD83C\uDFFB");
+                    send.setText("Bosh menyu");
                     send.setReplyMarkup(ReplyButtons.mainMenuButtons());
                     sendMsg(send);
                 }
@@ -338,7 +337,7 @@ public class MainController extends TelegramLongPollingBot {
                 if (userService.getById(currentUser.getTgId()).getStep().equals(UserStep.END)) {
                     SendMessage send = new SendMessage();
                     send.setChatId(callbackQuery.getFrom().getId());
-                    send.setText("Bosh menyu \uD83D\uDC47\uD83C\uDFFB");
+                    send.setText("Bosh menyu");
                     send.setReplyMarkup(ReplyButtons.mainMenuButtons());
                     sendMsg(send);
                 }
