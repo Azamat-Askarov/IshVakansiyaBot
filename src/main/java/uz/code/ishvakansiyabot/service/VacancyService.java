@@ -681,4 +681,8 @@ public class VacancyService {
         sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("To'liq ko'rsatish", "getMoreNewVacancy" + entity.getId())))));
         return sendMessage;
     }
+
+    public List<VacancyEntity> checkingVacanciesDate() {
+        return vacancyRepository.findAllByStatus(GeneralStatus.ACTIVE);
+    }
 }

@@ -14,6 +14,7 @@ import uz.code.ishvakansiyabot.dto.ResumeDTO;
 import uz.code.ishvakansiyabot.dto.SearcherDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.entity.ResumeEntity;
+import uz.code.ishvakansiyabot.entity.VacancyEntity;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.SearchMethodType;
 import uz.code.ishvakansiyabot.enums.SearchPostType;
@@ -682,5 +683,9 @@ public class ResumeService {
         sendMessage.setText("#" + entity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + entity.getCreatedDate());
         sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Batafsil", "getMoreNewResume" + entity.getId())))));
         return sendMessage;
+    }
+
+    public List<ResumeEntity> checkingResumesDate() {
+        return resumeRepository.findAllByStatus(GeneralStatus.ACTIVE);
     }
 }

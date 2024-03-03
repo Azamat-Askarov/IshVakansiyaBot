@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer> {
+    List<VacancyEntity> findAllByStatus(GeneralStatus generalStatus);
+
     Optional<VacancyEntity> findById(Integer id);
 
     List<VacancyEntity> findByEmployerIdAndStatus(Long id, GeneralStatus generalStatus);

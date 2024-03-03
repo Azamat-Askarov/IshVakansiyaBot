@@ -1,12 +1,16 @@
 package uz.code.ishvakansiyabot.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -33,6 +37,22 @@ public class UserService {
     VacancyRepository vacancyRepository;
     @Autowired
     ResumeRepository resumeRepository;
+
+    public EditMessageText checkingPost(CallbackQuery callbackQuery) {
+        Integer postId;
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(callbackQuery.getFrom().getId());
+        if (callbackQuery.getData().startsWith("notDeleteVacancy")) {
+            postId = Integer.parseInt(callbackQuery.getData().substring(16));
+            vacancyRepository.changeVacancyStatus(postId, GeneralStatus.ACTIVE);
+            editMessageText.setText("✅ Vakansiya qayta faollashtirildi.");
+        } else if (callbackQuery.getData().startsWith("notDeleteResume")) {
+            postId = Integer.parseInt(callbackQuery.getData().substring(15));
+            resumeRepository.changeResumeStatus(postId, GeneralStatus.ACTIVE);
+            editMessageText.setText("✅ Rezyume qayta faollashtirildi.");
+        }
+        return editMessageText;
+    }
 
     public Boolean isDigit(String text) {
         for (int i = 0; i < text.length(); i++) {

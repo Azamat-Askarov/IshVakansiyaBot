@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ResumeRepository extends CrudRepository<ResumeEntity, Integer> {
+    List<ResumeEntity> findAllByStatus(GeneralStatus generalStatus);
 
     Optional<ResumeEntity> findById(Integer id);
 
@@ -32,6 +33,11 @@ public interface ResumeRepository extends CrudRepository<ResumeEntity, Integer> 
     @Modifying
     @Query("update ResumeEntity set status =?2 where employeeId =?1 ")
     void changeResumesStatusByEmployeeId(Long id, GeneralStatus status);
+
+    @Transactional
+    @Modifying
+    @Query("update ResumeEntity set status =?2 where id =?1 ")
+    void changeResumeStatus(Integer id, GeneralStatus status);
 
     @Transactional
     @Modifying

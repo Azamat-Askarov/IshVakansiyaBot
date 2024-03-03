@@ -2,6 +2,7 @@ package uz.code.ishvakansiyabot.controller;
 
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,24 +15,32 @@ import uz.code.ishvakansiyabot.dto.ResumeDTO;
 import uz.code.ishvakansiyabot.dto.SendMsgDTO;
 import uz.code.ishvakansiyabot.dto.UserDTO;
 import uz.code.ishvakansiyabot.dto.VacancyDTO;
+import uz.code.ishvakansiyabot.entity.ResumeEntity;
+import uz.code.ishvakansiyabot.entity.VacancyEntity;
 import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.SearchPostType;
 import uz.code.ishvakansiyabot.enums.UserStep;
 import uz.code.ishvakansiyabot.repository.MapRepository;
+import uz.code.ishvakansiyabot.repository.ResumeRepository;
 import uz.code.ishvakansiyabot.repository.UserRepository;
 import uz.code.ishvakansiyabot.repository.VacancyRepository;
 import uz.code.ishvakansiyabot.service.AuthService;
 import uz.code.ishvakansiyabot.service.ResumeService;
 import uz.code.ishvakansiyabot.service.UserService;
 import uz.code.ishvakansiyabot.service.VacancyService;
+import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
 import uz.code.ishvakansiyabot.util.ReplyButtons;
 
+import java.sql.Date;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
 public class MainController extends TelegramLongPollingBot {
-    @Autowired
-    VacancyRepository vacancyRepository;
     @Autowired
     BotConfig botConfig;
     @Autowired
@@ -44,6 +53,44 @@ public class MainController extends TelegramLongPollingBot {
     ResumeService resumeService;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    VacancyRepository vacancyRepository;
+    @Autowired
+    ResumeRepository resumeRepository;
+
+    @Scheduled(cron = "00 00 03 * * *")
+    public void checkingVacancies() {
+        List<VacancyEntity> vacancyEntityList = vacancyService.checkingVacanciesDate();
+        for (int i = 0; i < vacancyEntityList.size(); i++) {
+            VacancyEntity vacancyEntity = vacancyEntityList.get(i);
+            long countDays = ChronoUnit.DAYS.between(LocalDate.parse(vacancyEntity.getCreatedDate().substring(0, 10)), LocalDate.now());
+            if (countDays % 10 == 0) {
+                vacancyRepository.changeVacancyStatus(vacancyEntity.getId(), GeneralStatus.DELETED);
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(vacancyEntity.getEmployerId());
+                sendMessage.setText("#" + vacancyEntity.getId() + "  \uD83D\uDD30  Vakansiya  \uD83D\uDD30" + "\n\uD83C\uDFE2 Ish beruvchi : " + vacancyEntity.getEmployerName() + "\n\uD83D\uDCCB Yo'nalish : " + vacancyEntity.getSpecialty1() + ", " + vacancyEntity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + vacancyEntity.getSalary() + "\n\uD83D\uDDD3 Created date : " + vacancyEntity.getCreatedDate() + "\n\n⚠\uFE0F Hurmatli foydalanuvchi ushbu vakansiya tizimga qo'shilganiga " + countDays + " kun bo'ldi.\nUshbu sababdan biz ushbu vakansiyani tizimdan o'chiryapmiz.\nAgar hali ham vakansiyaga mos xodim topmagan bo'lsangiz \"O'chirilmasin\" tugmasini bosing.");
+                sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("O'chirilmasin", "notDeleteVacancy" + vacancyEntity.getId())))));
+                sendMsg(sendMessage);
+            }
+        }
+    }
+
+    @Scheduled(cron = "00 30 03 * * *")
+    public void checkingResumes() {
+        List<ResumeEntity> resumeEntityList = resumeService.checkingResumesDate();
+        for (int i = 0; i < resumeEntityList.size(); i++) {
+            ResumeEntity resumeEntity = resumeEntityList.get(i);
+            long countDays = ChronoUnit.DAYS.between(LocalDate.parse(resumeEntity.getCreatedDate().substring(0, 10)), LocalDate.now());
+            if (countDays % 15 == 0) {
+                resumeRepository.changeResumeStatus(resumeEntity.getId(), GeneralStatus.DELETED);
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(resumeEntity.getEmployeeId());
+                sendMessage.setText("#" + resumeEntity.getId() + "  \uD83D\uDD30  Rezyume  \uD83D\uDD30" + "\n\uD83D\uDC64 Ism : " + resumeEntity.getEmployeeName() + "\n\uD83D\uDCCB Yo'nalish : " + resumeEntity.getSpecialty1() + ", " + resumeEntity.getSpecialty2() + "\n\uD83D\uDCB0 Maosh : " + resumeEntity.getSalary() + "\n\uD83D\uDDD3 Created Date : " + resumeEntity.getCreatedDate() + "\n\n⚠\uFE0F Hurmatli foydalanuvchi ushbu rezyume tizimga qo'shilganiga " + countDays + " kun bo'ldi.\nUshbu sababdan biz ushbu rezyumeni tizimdan o'chiryapmiz.\nAgar hali ham rezyumega mos ish topmagan bo'lsangiz \"O'chirilmasin\" tugmasini bosing.");
+                sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("O'chirilmasin", "notDeleteResume" + resumeEntity.getId())))));
+                sendMsg(sendMessage);
+            }
+        }
+    }
 
     @SneakyThrows
     @Override
@@ -323,6 +370,8 @@ public class MainController extends TelegramLongPollingBot {
                 } else if (callbackQuery.getData().startsWith("getLessSearchResume")) {
                     sendMsg(resumeService.getSearchResultResume(callbackQuery));
                 }
+            } else if (callbackQuery.getData().startsWith("notDelete")) {
+                sendEditMsg(userService.checkingPost(callbackQuery));
             } else if (currentUser.getStep().equals(UserStep.SEARCH_VACANCY)) {
                 sendEditMsg(vacancyService.search(callbackQuery));
                 if (userService.getById(currentUser.getTgId()).getStep().equals(UserStep.END)) {
@@ -443,9 +492,8 @@ public class MainController extends TelegramLongPollingBot {
                 }
             } else if (currentUser.getStep().equals(UserStep.EDIT_RESUME)) {
                 sendEditMsg(resumeService.editResume(callbackQuery));
-            } else if (currentUser.getStep().equals(UserStep.EDIT_ADDRESS)) {
-
             }
+
         }
     }
 
