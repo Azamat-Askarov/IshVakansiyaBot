@@ -31,11 +31,7 @@ import uz.code.ishvakansiyabot.service.VacancyService;
 import uz.code.ishvakansiyabot.util.InlineKeyboardButtonUtil;
 import uz.code.ishvakansiyabot.util.ReplyButtons;
 
-import java.sql.Date;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -58,13 +54,13 @@ public class MainController extends TelegramLongPollingBot {
     @Autowired
     ResumeRepository resumeRepository;
 
-    @Scheduled(cron = "00 00 03 * * *")
+    @Scheduled(cron = "00 32 12 * * *")
     public void checkingVacancies() {
         List<VacancyEntity> vacancyEntityList = vacancyService.checkingVacanciesDate();
         for (int i = 0; i < vacancyEntityList.size(); i++) {
             VacancyEntity vacancyEntity = vacancyEntityList.get(i);
             long countDays = ChronoUnit.DAYS.between(LocalDate.parse(vacancyEntity.getCreatedDate().substring(0, 10)), LocalDate.now());
-            if (countDays % 10 == 0) {
+            if (countDays!=0&&countDays % 10 == 0) {
                 vacancyRepository.changeVacancyStatus(vacancyEntity.getId(), GeneralStatus.DELETED);
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(vacancyEntity.getEmployerId());
@@ -81,7 +77,7 @@ public class MainController extends TelegramLongPollingBot {
         for (int i = 0; i < resumeEntityList.size(); i++) {
             ResumeEntity resumeEntity = resumeEntityList.get(i);
             long countDays = ChronoUnit.DAYS.between(LocalDate.parse(resumeEntity.getCreatedDate().substring(0, 10)), LocalDate.now());
-            if (countDays % 15 == 0) {
+            if (countDays!=0&&countDays % 15 == 0) {
                 resumeRepository.changeResumeStatus(resumeEntity.getId(), GeneralStatus.DELETED);
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(resumeEntity.getEmployeeId());

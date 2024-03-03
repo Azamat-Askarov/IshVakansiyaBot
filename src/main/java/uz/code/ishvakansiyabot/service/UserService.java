@@ -42,6 +42,7 @@ public class UserService {
         Integer postId;
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getFrom().getId());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (callbackQuery.getData().startsWith("notDeleteVacancy")) {
             postId = Integer.parseInt(callbackQuery.getData().substring(16));
             vacancyRepository.changeVacancyStatus(postId, GeneralStatus.ACTIVE);
