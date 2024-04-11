@@ -103,15 +103,18 @@ public class MainController extends TelegramLongPollingBot {
                 execute(deleteMessage);
                 /**   "calcelPosting" msg  */
                 sendMsg(userService.cancelPosting(currentUser));
-            } else if (currentUser == null || currentUser.getStatus().equals(GeneralStatus.DELETED)) {
+            }
+            else if (currentUser == null || currentUser.getStatus().equals(GeneralStatus.DELETED)) {
                 /** hello user...... */
                 sendMsg(authService.helloUser(user));
-            } else if (currentUser.getStep().equals(UserStep.SEND_FEEDBACK)) {
+            }
+            else if (currentUser.getStep().equals(UserStep.SEND_FEEDBACK)) {
                 sendMsgDTO(userService.sendFeedback(message));
                 if (userService.getById(message.getChatId()).getStep().equals(UserStep.END)) {
                     sendMsgDTO(MapRepository.currentFeedbackMap.get(user.getId()));
                 }
-            } else if (message.getText().equals("/start")) {
+            }
+            else if (message.getText().equals("/start")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(user.getId());
                 if (currentUser.getStep().equals(UserStep.END)) {
@@ -138,16 +141,19 @@ public class MainController extends TelegramLongPollingBot {
                     sendMessage.setReplyMarkup(ReplyButtons.regionsButtons());
                 }
                 sendMsg(sendMessage);
-            } else if (currentUser.getStatus().equals(GeneralStatus.NEW_USER)) {
+            }
+            else if (currentUser.getStatus().equals(GeneralStatus.NEW_USER)) {
                 /** begin user registring */
                 if (currentUser.getName() == null) {
                     sendMsg(authService.setName(message.getText(), currentUser.getTgId())); // ism set qilish
                 } else if (currentUser.getAge() == null) {
                     sendMsg(authService.setAge(message.getText(), currentUser.getTgId())); // age set qilish
                 }
-            } else if (message.getText().equals("Vakansiya joylashㅤ")) {
+            }
+            else if (message.getText().equals("Vakansiya joylashㅤ")) {
                 sendMsg(vacancyService.create(currentUser.getTgId()));
-            } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
+            }
+            else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
                 /**  get current vacancy */
                 VacancyDTO vacancyDTO = MapRepository.currentVacancy.get(currentUser.getTgId());
                 if (vacancyDTO.getEmployerName() == null) {
@@ -169,9 +175,11 @@ public class MainController extends TelegramLongPollingBot {
                     /** set extra info to vacancy ent accepting set vacancy to DataBase */
                     sendMsg(vacancyService.acceptingVacancy(message));
                 }
-            } else if (message.getText().equals("Rezyume joylashㅤ")) {
+            }
+            else if (message.getText().equals("Rezyume joylashㅤ")) {
                 sendMsg(resumeService.create(currentUser.getTgId()));
-            } else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
+            }
+            else if (currentUser.getStep().equals(UserStep.ADD_RESUME)) {
                 /**  get current resume */
                 ResumeDTO resumeDTO = MapRepository.currentResume.get(currentUser.getTgId());
                 if (resumeDTO.getEmployeeName() == null) {
@@ -193,45 +201,55 @@ public class MainController extends TelegramLongPollingBot {
                     /** set extra info to vacancy ent accepting set vacancy to DataBase */
                     sendMsg(resumeService.acceptingResume(message));
                 }
-            } else if (message.getText().equals("Mening vakansiyalarimㅤ")) {
+            }
+            else if (message.getText().equals("Mening vakansiyalarimㅤ")) {
                 List<SendMessage> vacancyMsgList = vacancyService.getMyVacancies(currentUser.getTgId());
                 for (int i = 0; i < vacancyMsgList.size(); i++) {
                     sendMsg(vacancyMsgList.get(i));
                 }
-            } else if (message.getText().equals("Mening rezyumelarimㅤ")) {
+            }
+            else if (message.getText().equals("Mening rezyumelarimㅤ")) {
                 List<SendMessage> resumeMsgList = resumeService.getMyResumes(currentUser.getTgId());
                 for (int i = 0; i < resumeMsgList.size(); i++) {
                     sendMsg(resumeMsgList.get(i));
                 }
-            } else if (message.getText().equals("Vakansiya izlashㅤ")) {
+            }
+            else if (message.getText().equals("Vakansiya izlashㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
                 sendMessage.setText("\uD83D\uDD0D Vakansiya izlash");
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(vacancyService.createSearchMethod(currentUser.getTgId()));
-            } else if (message.getText().equals("Rezyume izlashㅤ")) {
+            }
+            else if (message.getText().equals("Rezyume izlashㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
                 sendMessage.setText("\uD83D\uDD0D Rezyume izlash");
                 sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
                 sendMsg(sendMessage);
                 sendMsg(resumeService.createSearchMethod(currentUser.getTgId()));
-            } else if (message.getText().equals("Adminㅤ")) {
+            }
+            else if (message.getText().equals("Adminㅤ")) {
                 sendMsg(userService.botSupport(message));
-            } else if (message.getText().equals("Sozlamalarㅤ")) {
+            }
+            else if (message.getText().equals("Sozlamalarㅤ")) {
                 sendMsg(userService.settings(message));
-            } else if (message.getText().equals("\uD83D\uDC64 Profileㅤ")) {
+            }
+            else if (message.getText().equals("\uD83D\uDC64 Profileㅤ")) {
                 sendMsgDTO(userService.getProfile(message));
-            } else if (message.getText().equals("\uD83D\uDCCA Statisticsㅤ")) {
+            }
+            else if (message.getText().equals("\uD83D\uDCCA Statisticsㅤ")) {
                 sendMsgDTO(userService.statistics(message));
-            } else if (message.getText().equals("\uD83D\uDCB3 Donateㅤ")) {
+            }
+            else if (message.getText().equals("\uD83D\uDCB3 Donateㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
-                sendMessage.setText("Telegram bot faoliyati sizga ma'qul kelayotgan bo'lsa xursandmiz\uD83D\uDE0A\n" + "Bot faoliyati davomli va yanada sifatli bo'lishi uchun o'z hissangizni qo'shing\uD83D\uDE09\n\n" + "\uD83D\uDCB3  5614680004553372  \uD83D\uDCB3");
+                sendMessage.setText("Telegram bot faoliyati sizga ma'qul kelayotgan bo'lsa xursandmiz\uD83D\uDE0A\n" + "Bot faoliyati davomli va yanada sifatli bo'lishi uchun o'z hissangizni qo'shing\uD83D\uDE09\n\n" + "\uD83D\uDCB3  8600310425675329  \uD83D\uDCB3");
                 sendMsg(sendMessage);
 
-            } else if (message.getText().equals("⬅\uFE0F Ortgaㅤ")) {
+            }
+            else if (message.getText().equals("⬅\uFE0F Ortgaㅤ")) {
                 if (currentUser.getStep().equals(UserStep.SETTINGS)) {
                     userRepository.changeUserStep(message.getChatId(), UserStep.END);
                     SendMessage sendMessage = new SendMessage();
@@ -249,20 +267,24 @@ public class MainController extends TelegramLongPollingBot {
                     sendMessage.setReplyMarkup(ReplyButtons.profileButtons());
                     sendMsg(sendMessage);
                 }
-            } else if (message.getText().equals("Profilni tahrirlashㅤ")) {
+            }
+            else if (message.getText().equals("Profilni tahrirlashㅤ")) {
                 sendMsgDTO(userService.editProfile(message));
-            } else if (message.getText().equals("Profilni o'chirishㅤ")) {
+            }
+            else if (message.getText().equals("Profilni o'chirishㅤ")) {
                 userRepository.changeUserStep(message.getChatId(), UserStep.DELETING_PROFILE);
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(message.getChatId());
                 sendMessage.setText("Profilingizni o'chirsangiz sizdagi mavjud barcha vakansiya va rezyumelar ham o'chiriladi !!");
                 sendMessage.setReplyMarkup(ReplyButtons.acceptingDeletingButtons());
                 sendMsg(sendMessage);
-            } else if (currentUser.getStep().equals(UserStep.DELETING_PROFILE)) {
+            }
+            else if (currentUser.getStep().equals(UserStep.DELETING_PROFILE)) {
                 if (message.getText().equals("✅ Tasdiqlashㅤ")) {
                     sendMsgDTO(userService.deleteProfile(message));
                 }
-            } else if (currentUser.getStep().equals(UserStep.EDIT_PROFILE)) {
+            }
+            else if (currentUser.getStep().equals(UserStep.EDIT_PROFILE)) {
                 if (message.getText().equals("Ismㅤ")) {
                     userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_NAME);
                     SendMessage sendMessage = new SendMessage();
@@ -285,11 +307,14 @@ public class MainController extends TelegramLongPollingBot {
                     sendMessage.setReplyMarkup(ReplyButtons.regionsButtons());
                     sendMsg(sendMessage);
                 }
-            } else if (currentUser.getStep().equals(UserStep.EDIT_NAME) && message.hasText()) {
+            }
+            else if (currentUser.getStep().equals(UserStep.EDIT_NAME) && message.hasText()) {
                 sendMsg(userService.setName(message.getText(), message.getChatId()));
-            } else if (currentUser.getStep().equals(UserStep.EDIT_AGE) && message.hasText()) {
+            }
+            else if (currentUser.getStep().equals(UserStep.EDIT_AGE) && message.hasText()) {
                 sendMsg(userService.setAge(message.getText(), message.getChatId()));
-            } else if (currentUser.getStep().equals(UserStep.EDIT_ADDRESS) && message.hasText()) {
+            } 
+            else if (currentUser.getStep().equals(UserStep.EDIT_ADDRESS) && message.hasText()) {
                 userRepository.changeUserStep(message.getChatId(), UserStep.EDIT_PROFILE);
                 userRepository.changeUserAddress(message.getChatId(), message.getText());
                 SendMessage sendMessage = new SendMessage();
@@ -397,6 +422,11 @@ public class MainController extends TelegramLongPollingBot {
                     msg.setChatId(currentUser.getTgId());
                     msg.setReplyMarkup(ReplyButtons.mainMenuButtons());
                     sendMsg(msg);
+                    /** send new user msg to admin */
+                    SendMessage newUserMsgToAdmin = new SendMessage();
+                    newUserMsgToAdmin.setChatId(6793690581L);
+                    newUserMsgToAdmin.setText("\uD83D\uDC64 Yangi foydalanuvchi.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD37 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId());
+                    sendMsg(newUserMsgToAdmin);
                 }
             } else if (currentUser.getStep().equals(UserStep.ADD_VACANCY)) {
                 if (MapRepository.currentVacancy.get(currentUser.getTgId()).getWorkRegion() == null) {
@@ -418,7 +448,7 @@ public class MainController extends TelegramLongPollingBot {
                     /** send total Vacancy Msg  */
                     EditMessageText editMessageText = new EditMessageText();
                     editMessageText.setChatId(callbackQuery.getFrom().getId());
-                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + dto.getPosition() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Vakansiya \uD83D\uDD30\n\n\uD83C\uDFE2 Ish beruvchi : " + dto.getEmployerName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBC Lavozim : " + dto.getPosition() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @JobZoneUzBot   》》");
                     editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
                     sendEditMsg(editMessageText);
                     //.............................................//
@@ -463,7 +493,7 @@ public class MainController extends TelegramLongPollingBot {
                     /** send total Vacancy Msg  */
                     EditMessageText editMessageText = new EditMessageText();
                     editMessageText.setChatId(callbackQuery.getFrom().getId());
-                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+                    editMessageText.setText("#" + dto.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + dto.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + dto.getWorkRegion() + ", " + dto.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + dto.getSpecialty1() + ", " + dto.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + dto.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + dto.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + dto.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + dto.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + dto.getExtraInfo() + "\n\n《《   @JobZoneUzBot   》》");
                     editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
                     sendEditMsg(editMessageText);
                     //.................................................//

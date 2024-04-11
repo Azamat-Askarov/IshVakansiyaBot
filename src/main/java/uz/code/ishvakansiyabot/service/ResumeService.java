@@ -71,7 +71,7 @@ public class ResumeService {
             /**  get resumeEntity from DB */
             Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
             ResumeEntity entity = optional.get();
-            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @JobZoneUzBot   》》");
             editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Rezyumeni o'chirish", "getDeletingResume" + entity.getId())), InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "getLessResume" + entity.getId())))));
         } else if (callbackQuery.getData().startsWith("getLessResume")) {
             /**  get resumeId from callBackQuery */
@@ -87,7 +87,7 @@ public class ResumeService {
             /**  get resumeEntity from DB */
             Optional<ResumeEntity> optional = resumeRepository.findById(resumeId);
             ResumeEntity entity = optional.get();
-            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @IshVakansiyaBot   》》");
+            editMessageText.setText("#" + entity.getId() + "  \uD83D\uDD30 Rezyume \uD83D\uDD30\n\n\uD83D\uDC64 Ism : " + entity.getEmployeeName() + "\n\uD83D\uDDFA Manzil : " + entity.getWorkRegion() + ", " + entity.getWorkDistinct() + "\n\uD83D\uDCCB Yo'nalish : " + entity.getSpecialty1() + ", " + entity.getSpecialty2() + "\n❇\uFE0F Texnologiyalar : " + entity.getTechnologies() + "\n\uD83D\uDCB0 Maosh : " + entity.getSalary() + "\n\uD83D\uDD5E Haftalik ish soati : " + entity.getWorkTime() + "\n\uD83D\uDCF1 Aloqa : " + entity.getConnectAddress() + "\n\n‼\uFE0F Qo'shimcha : " + entity.getExtraInfo() + "\n\n《《   @JobZoneUzBot   》》");
             editMessageText.setReplyMarkup(InlineKeyboardButtonUtil.keyboard(InlineKeyboardButtonUtil.collection(InlineKeyboardButtonUtil.row(InlineKeyboardButtonUtil.button("Xabarni qisqartirish", "getLessNewResume" + entity.getId())))));
         } else if (callbackQuery.getData().startsWith("getLessNewResume")) {
             /**  get resumeId from callBackQuery */
@@ -466,6 +466,7 @@ public class ResumeService {
 
     public List<SendMessage> sendingResumeToEmployers(ResumeDTO dto) {
         List<Long> employerList = vacancyRepository.getEmployerIdByWorkRegionAndSpecialty2AndStatus(dto.getWorkRegion(), dto.getSpecialty2(), GeneralStatus.ACTIVE);
+        employerList.add(6793690581L);
         List<SendMessage> sendMessageList = new LinkedList<>();
         for (int i = 0; i < employerList.size(); i++) {
             SendMessage sendMessage = new SendMessage();

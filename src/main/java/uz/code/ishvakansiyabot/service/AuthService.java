@@ -142,7 +142,7 @@ public class AuthService {
             userService.update(currentUser);
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMsg.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Created date : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
+            editMsg.setText("\uD83D\uDC64 Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Created date : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
         } else if (callbackQuery.getData().equals("edit")) {
             currentUser.setName(null);
             currentUser.setAge(null);

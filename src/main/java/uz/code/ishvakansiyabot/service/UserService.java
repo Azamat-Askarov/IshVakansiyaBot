@@ -172,13 +172,13 @@ public class UserService {
             SendMsgDTO feedBack = new SendMsgDTO();
             if (message.hasText()) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(5952923848L);
+                sendMessage.setChatId(6793690581L);
                 sendMessage.setText("#feedback  ID: " + message.getChatId() + "\n\n" + message.getText());
                 feedBack.setText(sendMessage);
             } else if (message.hasPhoto()) {
                 var photo = message.getPhoto().stream().max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight())).orElse(null);
                 SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(5952923848L);
+                sendPhoto.setChatId(6793690581L);
                 sendPhoto.setPhoto(new InputFile(photo.getFileId()));
                 sendPhoto.setCaption("#feedback  ID: " + message.getChatId() + "\n\n" + message.getCaption());
                 feedBack.setPhoto(sendPhoto);
@@ -216,7 +216,7 @@ public class UserService {
         UserDTO dto = getById(message.getChatId());
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("Bot ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + "\n\uD83D\uDD37 Created date : " + dto.getCreatedDate() + "\n\uD83D\uDD36 Vakansiyalar : " + userRepository.countAllVacanciesFromUser(message.getChatId()) + "\n\uD83D\uDD37 Rezyumelar : " + userRepository.countAllResumesFromUser(message.getChatId()) + "\n\nHisobingizni to'ldirish uchun ixtiyoriy mobile app yordamida  ushbu  5614680004553372  karta raqamiga pul o'tkazing va botning \"Admin\" bo'limiga kirib check skrinshotini yuboring. Adminlarimiz check skrishotni 24 soat ichida ko'rib chiqishadi va tasdiqlansa pul sizning hisobingizga qo'shiladi.");
+        sendMessage.setText("Bot ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + "\n\uD83D\uDD37 Created date : " + dto.getCreatedDate() + "\n\uD83D\uDD36 Vakansiyalar : " + userRepository.countAllVacanciesFromUser(message.getChatId()) + "\n\uD83D\uDD37 Rezyumelar : " + userRepository.countAllResumesFromUser(message.getChatId()) + "\n\nHisobingizni to'ldirish uchun ixtiyoriy mobile ilova yordamida  ushbu  8600310425675329  karta raqamiga pul o'tkazing va botning \"Admin\" bo'limiga kirib check skrinshotini yuboring. Adminlarimiz check skrishotni 24 soat ichida ko'rib chiqishadi va tasdiqlansa pul sizning hisobingizga qo'shiladi.");
         sendMessage.setReplyMarkup(ReplyButtons.profileButtons());
         SendMsgDTO sendMsgDTO = new SendMsgDTO();
         sendMsgDTO.setText(sendMessage);
@@ -246,7 +246,7 @@ public class UserService {
             userRepository.changeUserStatus(message.getChatId(), GeneralStatus.DELETED);
             vacancyRepository.changeVacanciesStatusByEmployerId(message.getChatId(), GeneralStatus.DELETED);
             resumeRepository.changeResumesStatusByEmployeeId(message.getChatId(), GeneralStatus.DELETED);
-            sendMessage.setText("Account has been deleted. !!");
+            sendMessage.setText("Akkaunt o'chirildi. !!");
             sendMessage.setReplyMarkup(ReplyButtons.startButton());
             sendMsgDTO.setText(sendMessage);
         } else {
