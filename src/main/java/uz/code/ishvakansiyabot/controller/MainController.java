@@ -54,7 +54,7 @@ public class MainController extends TelegramLongPollingBot {
     @Autowired
     ResumeRepository resumeRepository;
 
-    @Scheduled(cron = "00 32 12 * * *")
+    @Scheduled(cron = "03 30 00 * * *")
     public void checkingVacancies() {
         List<VacancyEntity> vacancyEntityList = vacancyService.checkingVacanciesDate();
         for (int i = 0; i < vacancyEntityList.size(); i++) {
@@ -71,7 +71,7 @@ public class MainController extends TelegramLongPollingBot {
         }
     }
 
-    @Scheduled(cron = "00 30 03 * * *")
+    @Scheduled(cron = "04 00 00 * * *")
     public void checkingResumes() {
         List<ResumeEntity> resumeEntityList = resumeService.checkingResumesDate();
         for (int i = 0; i < resumeEntityList.size(); i++) {
@@ -245,7 +245,7 @@ public class MainController extends TelegramLongPollingBot {
             else if (message.getText().equals("\uD83D\uDCB3 Donateㅤ")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(currentUser.getTgId());
-                sendMessage.setText("Telegram bot faoliyati sizga ma'qul kelayotgan bo'lsa xursandmiz\uD83D\uDE0A\n" + "Bot faoliyati davomli va yanada sifatli bo'lishi uchun o'z hissangizni qo'shing\uD83D\uDE09\n\n" + "\uD83D\uDCB3  8600310425675329  \uD83D\uDCB3");
+                sendMessage.setText("Bot faoliyati davomli va yanada sifatli bo'lishi uchun o'z hissangizni qo'shing\uD83D\uDE09\n\n" + "\uD83D\uDCB3  8600310425675329  \uD83D\uDCB3");
                 sendMsg(sendMessage);
 
             }
@@ -418,7 +418,7 @@ public class MainController extends TelegramLongPollingBot {
                 /**/
                 if (authService.getById(currentUser.getTgId()).getStatus().equals(GeneralStatus.ACTIVE)) {
                     SendMessage msg = new SendMessage();
-                    msg.setText("\uD83D\uDCF1 Endi bot imkoniyatlaridan to'liq foydalanishingiz mumkin.");
+                    msg.setText("Bosh menyu");
                     msg.setChatId(currentUser.getTgId());
                     msg.setReplyMarkup(ReplyButtons.mainMenuButtons());
                     sendMsg(msg);

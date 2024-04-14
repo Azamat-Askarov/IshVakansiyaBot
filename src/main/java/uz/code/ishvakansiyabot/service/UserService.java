@@ -146,7 +146,7 @@ public class UserService {
         userRepository.changeUserStep(message.getChatId(), UserStep.SEND_FEEDBACK);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("❇\uFE0F Texnik xatolik \n" + "❇\uFE0F Shikoyat yoki taklif \n" + "❇\uFE0F Reklama yoki hamkorlik masalasi\n" + "❇\uFE0F Hisobni to'ldirish\n" + "❇\uFE0F bemani yoki haqoratomuz e'lon\n" + "❇\uFE0F Soxta e'lon yoki shunga o'xshash holat\n" + ". . . . lar haqida adminlarga xabar yubormqchi bo'lsangiz bu haqida to'liq va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Adminlarimiz 24 soat ichida sizga javob xabarini yuborishadi !\n\n✍\uD83C\uDFFB . . .");
+        sendMessage.setText("❇\uFE0F Texnik xatolik \n" + "❇\uFE0F Shikoyat yoki taklif \n" + "❇\uFE0F Reklama yoki hamkorlik masalasi\n" + "❇\uFE0F bemani yoki haqoratomuz e'lon\n" + "❇\uFE0F Soxta e'lon yoki shunga o'xshash holat\n" + ". . . . lar haqida adminlarga xabar yubormqchi bo'lsangiz bu haqida to'liq va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Adminlarimiz 24 soat ichida sizga javob xabarini yuborishadi !\n\n✍\uD83C\uDFFB . . .");
         sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
         return sendMessage;
     }
@@ -173,14 +173,14 @@ public class UserService {
             if (message.hasText()) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(6793690581L);
-                sendMessage.setText("#feedback  ID: " + message.getChatId() + "\n\n" + message.getText());
+                sendMessage.setText("#feedback\nUserID: " + message.getChatId() + "\nUsername : @" + message.getFrom().getUserName() + "\n\n" + message.getText());
                 feedBack.setText(sendMessage);
             } else if (message.hasPhoto()) {
                 var photo = message.getPhoto().stream().max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight())).orElse(null);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setChatId(6793690581L);
                 sendPhoto.setPhoto(new InputFile(photo.getFileId()));
-                sendPhoto.setCaption("#feedback  ID: " + message.getChatId() + "\n\n" + message.getCaption());
+                sendPhoto.setCaption("#feedback\nUserID: " + message.getChatId() + "\nUsername : @" + message.getFrom().getUserName() + "\n\n" + message.getCaption());
                 feedBack.setPhoto(sendPhoto);
             }
             MapRepository.currentFeedbackMap.put(user.getId(), feedBack);
@@ -216,7 +216,7 @@ public class UserService {
         UserDTO dto = getById(message.getChatId());
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("Bot ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + "\n\uD83D\uDD37 Created date : " + dto.getCreatedDate() + "\n\uD83D\uDD36 Vakansiyalar : " + userRepository.countAllVacanciesFromUser(message.getChatId()) + "\n\uD83D\uDD37 Rezyumelar : " + userRepository.countAllResumesFromUser(message.getChatId()) + "\n\nHisobingizni to'ldirish uchun ixtiyoriy mobile ilova yordamida  ushbu  8600310425675329  karta raqamiga pul o'tkazing va botning \"Admin\" bo'limiga kirib check skrinshotini yuboring. Adminlarimiz check skrishotni 24 soat ichida ko'rib chiqishadi va tasdiqlansa pul sizning hisobingizga qo'shiladi.");
+        sendMessage.setText("Foydalanuvchi ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Created date : " + dto.getCreatedDate() + "\n\uD83D\uDD37 Vakansiyalar : " + userRepository.countAllVacanciesFromUser(message.getChatId()) + " ta\n\uD83D\uDD36 Rezyumelar : " + userRepository.countAllResumesFromUser(message.getChatId()) + " ta");
         sendMessage.setReplyMarkup(ReplyButtons.profileButtons());
         SendMsgDTO sendMsgDTO = new SendMsgDTO();
         sendMsgDTO.setText(sendMessage);

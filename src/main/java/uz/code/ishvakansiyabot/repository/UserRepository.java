@@ -40,7 +40,7 @@ public interface UserRepository extends CrudRepository<UserEntity, Long>  {
     @Query("SELECT COUNT(u) FROM UserEntity u WHERE u.status = 'ACTIVE' ")
     Integer countActiveUsers();
 
-    @Query("SELECT COUNT(u) FROM UserEntity u WHERE u.status = 'DELETED' ")
+    @Query("SELECT COUNT(u) FROM UserEntity u WHERE u.status != 'ACTIVE' ")
     Integer countDeletedUsers();
 
     @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status = 'ACTIVE' AND  u.employerId = :tg_id")

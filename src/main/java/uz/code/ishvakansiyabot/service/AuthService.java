@@ -32,9 +32,10 @@ public class AuthService {
         SendMessage sendFirstMessage = new SendMessage();
         sendFirstMessage.setChatId(user.getId());
         sendFirstMessage.setReplyMarkup(InlineKeyBoardUtil.signUpOrAboutBotButton());
-        sendFirstMessage.setText("\uD83D\uDC4B\uD83C\uDFFB Assalomu alaykum.\n" + "\uD83D\uDD0D Botimiz orqali o'zingizga mos ish topishingiz yoki ma'lum bir yo'nalishda xodim kerak bo'lsa vakansiya joylashtirishingiz mumkin.\n" + "\uD83D\uDCF2 Botdan ro'yxatdan o'ting va bot imkoniyatlaridan to'liq foydalaning.");
+        sendFirstMessage.setText("\uD83D\uDC4B\uD83C\uDFFB Assalomu alaykum.\n" + "\uD83D\uDD0D Botimiz orqali o'zingizga mos ish topishingiz yoki ma'lum bir yo'nalishda xodim kerak bo'lsa vakansiya joylashtirishingiz mumkin.\n");
         return sendFirstMessage; //
     }
+
 
     public EditMessageText sendAboutBotMsg(CallbackQuery callbackQuery) {
         EditMessageText aboutBotEditMsg = new EditMessageText();
@@ -123,7 +124,7 @@ public class AuthService {
         UserDTO dto = getById(callBackData.getFrom().getId()); // user ni get qilish
         EditMessageText editMessageText = new EditMessageText();// editMsg object olish
         editMessageText.setMessageId(callBackData.getMessage().getMessageId());
-        editMessageText.setText("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB\uD83D\uDC69\uD83C\uDFFB\u200D\uD83D\uDCBC Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\uD83D\uDD36 Balans : " + dto.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + dto.getBotId() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+        editMessageText.setText("\uD83D\uDC64 Ma'lumotlaringiz.\n" + "\uD83D\uDD36 Foydalanuvchi ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
         editMessageText.setChatId(dto.getTgId());
         editMessageText.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());//editMsg ga tasdiqlash button ni set qilish
         return editMessageText;
@@ -142,7 +143,7 @@ public class AuthService {
             userService.update(currentUser);
             editMsg.setChatId(currentUser.getTgId());
             editMsg.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMsg.setText("\uD83D\uDC64 Ma'lumotlaringiz.\n" + "\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\uD83D\uDD36 Balans : " + currentUser.getBalance() + " so'm\n\uD83D\uDD37 Bot ID : " + currentUser.getBotId() + "\n\uD83D\uDD36 Created date : " + currentUser.getCreatedDate() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
+            editMsg.setText("Foydalanuvchi ID : " + currentUser.getBotId() + "\n\uD83D\uDD37 Ism : " + currentUser.getName() + "\n" + "\uD83D\uDD36 Yosh : " + currentUser.getAge() + "\n\uD83D\uDD37 Manzil : " + currentUser.getAddress() + "\n\n✅ Muvafaqqiyatli ro'yxatdan o'tdingiz.");
         } else if (callbackQuery.getData().equals("edit")) {
             currentUser.setName(null);
             currentUser.setAge(null);
