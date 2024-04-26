@@ -47,7 +47,7 @@ public interface VacancyRepository extends CrudRepository<VacancyEntity, Integer
     @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status = 'ACTIVE' ")
     Integer countActiveVacancies();
 
-    @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status = 'DELETED' ")
+    @Query("SELECT COUNT(u) FROM VacancyEntity u WHERE u.status != 'ACTIVE' ")
     Integer countDeletedVacancies();
 
 }

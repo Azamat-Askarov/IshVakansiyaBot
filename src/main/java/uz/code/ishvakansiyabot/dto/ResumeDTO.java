@@ -19,6 +19,5 @@ public class ResumeDTO {
     private String workRegion; // viloyat
     private String workDistinct; // tuman
     private String connectAddress;
-    private String workTime;
     private String extraInfo;
 }

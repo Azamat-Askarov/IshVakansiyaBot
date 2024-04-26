@@ -50,7 +50,7 @@ public interface ResumeRepository extends CrudRepository<ResumeEntity, Integer> 
     @Query("SELECT COUNT(r) FROM ResumeEntity r WHERE r.status = 'ACTIVE' ")
     Integer countActiveResumes();
 
-    @Query("SELECT COUNT(r) FROM ResumeEntity r WHERE r.status = 'DELETED' ")
+    @Query("SELECT COUNT(r) FROM ResumeEntity r WHERE r.status != 'ACTIVE' ")
     Integer countDeletedResumes();
 
 }

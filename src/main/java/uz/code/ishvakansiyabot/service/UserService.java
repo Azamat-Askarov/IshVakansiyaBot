@@ -98,7 +98,7 @@ public class UserService {
 
     public void delete(Long userId) {
         UserDTO dto = getById(userId);
-        dto.setStatus(GeneralStatus.DELETED);
+        dto.setStatus(GeneralStatus.DELETED_PROFILE);
         dto.setName(null);
         dto.setAge(null);
         dto.setAddress(null);
@@ -127,12 +127,12 @@ public class UserService {
             MapRepository.currentSearcherMap.remove(currentUser.getTgId());
         } else if (currentUser.getStep().equals(UserStep.SEND_FEEDBACK)) {
             MapRepository.currentFeedbackMap.remove(currentUser.getTgId());
-            sendMessage.setText("❌ Feedback bekor qilindi.");
+            sendMessage.setText("❌ Adminga xabar yuborish bekor qilindi.");
             userRepository.changeUserStep(currentUser.getTgId(), UserStep.END);
         }
         sendMessage.setReplyMarkup(ReplyButtons.mainMenuButtons());
         //..................................................//
-        if (currentUser.getStep().equals(UserStep.CREATING) || currentUser.getStep().equals(UserStep.ACCEPTING_NEW_USER)) {
+        if (currentUser.getStep().equals(UserStep.CREATING)) {
             sendMessage.setText("❌ Ro'yxatdan o'tish bekor qilindi.");
             sendMessage.setReplyMarkup(ReplyButtons.startButton());
             /** delete user from DB */
@@ -146,7 +146,7 @@ public class UserService {
         userRepository.changeUserStep(message.getChatId(), UserStep.SEND_FEEDBACK);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("❇\uFE0F Texnik xatolik \n" + "❇\uFE0F Shikoyat yoki taklif \n" + "❇\uFE0F Reklama yoki hamkorlik masalasi\n" + "❇\uFE0F bemani yoki haqoratomuz e'lon\n" + "❇\uFE0F Soxta e'lon yoki shunga o'xshash holat\n" + ". . . . lar haqida adminlarga xabar yubormqchi bo'lsangiz bu haqida to'liq va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Adminlarimiz 24 soat ichida sizga javob xabarini yuborishadi !\n\n✍\uD83C\uDFFB . . .");
+        sendMessage.setText("- Texnik xatolik \n" + "- Shikoyat yoki taklif \n" + "- Reklama yoki hamkorlik masalasi\n" + ". . . bo'yicha adminlarga xabar yubormqchi bo'lsangiz bu haqida tushunarli va aniq qilib bayon qiling yoki rasm/skrinshot yuboring. Adminlarimiz 24 soat ichida sizga javob xabarini yuborishadi.\n\n✍\uD83C\uDFFB . . .");
         sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
         return sendMessage;
     }
@@ -165,7 +165,7 @@ public class UserService {
             MapRepository.currentFeedbackMap.remove(user.getId());
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(message.getChatId());
-            sendMessage.setText("Xabaringizni kiriting . . .");
+            sendMessage.setText("✍\uD83C\uDFFB Xabaringizni kiriting . . .");
             sendMessage.setReplyMarkup(ReplyButtons.cancelButton());
             sendMsgDTO.setText(sendMessage);
         } else {
@@ -240,12 +240,15 @@ public class UserService {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         if (message.getText().equals("✅ Tasdiqlashㅤ")) {
-            userRepository.changeUserName(message.getChatId(), null);
-            userRepository.changeUserAge(message.getChatId(), null);
-            userRepository.changeUserAddress(message.getChatId(), null);
-            userRepository.changeUserStatus(message.getChatId(), GeneralStatus.DELETED);
-            vacancyRepository.changeVacanciesStatusByEmployerId(message.getChatId(), GeneralStatus.DELETED);
-            resumeRepository.changeResumesStatusByEmployeeId(message.getChatId(), GeneralStatus.DELETED);
+            UserDTO currentUser = getById(message.getChatId());
+            currentUser.setName(null);
+            currentUser.setAge(null);
+            currentUser.setAddress(null);
+            currentUser.setStep(null);
+            currentUser.setStatus(GeneralStatus.DELETED_PROFILE);
+            update(currentUser);
+            vacancyRepository.changeVacanciesStatusByEmployerId(message.getChatId(), GeneralStatus.DELETED_VACANCY);
+            resumeRepository.changeResumesStatusByEmployeeId(message.getChatId(), GeneralStatus.DELETED_RESUME);
             sendMessage.setText("Akkaunt o'chirildi. !!");
             sendMessage.setReplyMarkup(ReplyButtons.startButton());
             sendMsgDTO.setText(sendMessage);

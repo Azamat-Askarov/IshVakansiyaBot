@@ -29,7 +29,6 @@ public class ResumeEntity {
     private String salary;
     private String workRegion; // viloyat
     private String workDistinct; // tuman
-    private String workTime;
     private String connectAddress;
     @Column(columnDefinition = "text")
     private String extraInfo;

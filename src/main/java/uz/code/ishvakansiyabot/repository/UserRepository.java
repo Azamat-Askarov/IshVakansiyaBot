@@ -11,29 +11,32 @@ import uz.code.ishvakansiyabot.enums.GeneralStatus;
 import uz.code.ishvakansiyabot.enums.UserRole;
 import uz.code.ishvakansiyabot.enums.UserStep;
 
-public interface UserRepository extends CrudRepository<UserEntity, Long>  {
+public interface UserRepository extends CrudRepository<UserEntity, Long> {
     UserEntity findByTgId(Long id);
-    @Transactional
-    @Modifying
-    @Query("update UserEntity set status =?2 where tgId =?1 ")
-    void changeUserStatus(Long id, GeneralStatus status);
+
+    @Query(value = "delete from bot_user where tg_id=?1", nativeQuery = true)
+    void deleteByTgId(Long id);
 
     @Transactional
     @Modifying
     @Query("update UserEntity set step =?2 where tgId =?1")
     void changeUserStep(Long id, UserStep step);
+
     @Transactional
     @Modifying
     @Query("update UserEntity set name =?2 where tgId =?1")
     void changeUserName(Long id, String name);
+
     @Transactional
     @Modifying
     @Query("update UserEntity set age =?2 where tgId =?1")
     void changeUserAge(Long id, String age);
+
     @Transactional
     @Modifying
     @Query("update UserEntity set address =?2 where tgId =?1")
     void changeUserAddress(Long id, String address);
+
     @Query("select count(tg_id)from UserEntity tg_id")
     Integer countAllUsers();
 
@@ -48,7 +51,6 @@ public interface UserRepository extends CrudRepository<UserEntity, Long>  {
 
     @Query("SELECT COUNT(u) FROM ResumeEntity u WHERE u.status = 'ACTIVE' AND  u.employeeId = :tg_id")
     Integer countAllResumesFromUser(Long tg_id);
-
 
 
 }

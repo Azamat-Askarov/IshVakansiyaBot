@@ -25,7 +25,7 @@ public class VacancyEntity {
     private String specialty1;
     private String specialty2;
     @Column(columnDefinition = "text")
-    private String position;
+    private String technologies;
     private String salary;
     private String workRegion; // viloyat
     private String workDistinct; // tuman

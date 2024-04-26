@@ -14,7 +14,7 @@ public class VacancyDTO {
     private String employerName;
     private String specialty1;
     private String specialty2;
-    private String position;
+    private String technologies;
     private String salary;
     private String workRegion; // viloyat
     private String workDistinct; // tuman

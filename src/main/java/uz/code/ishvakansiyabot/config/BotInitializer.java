@@ -16,7 +16,7 @@ public class BotInitializer {
 
     @SneakyThrows
     @EventListener({ContextRefreshedEvent.class})
-    public void init(){
+    public void init() {
         TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
         api.registerBot(mainController);
     }

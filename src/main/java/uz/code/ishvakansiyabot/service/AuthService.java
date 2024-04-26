@@ -82,10 +82,14 @@ public class AuthService {
         } else if (text.length() < 3 || text.length() > 16) {
             sendMessage.setText("⚠\uFE0F Ism uzunligi [3 ; 16] oraliqda bo'lsin\n✍\uD83C\uDFFB Ismingiz . .");
         } else {
-            UserEntity entity = userRepository.findByTgId(tgId);
-            entity.setName(text);
-            userRepository.save(entity);
-            sendMessage.setText("✍\uD83C\uDFFB Yoshingiz . .");
+            if (text.equals("/start")) {
+                sendMessage.setText("✍\uD83C\uDFFB Ismingiz . .");
+            } else {
+                UserEntity entity = userRepository.findByTgId(tgId);
+                entity.setName(text);
+                userRepository.save(entity);
+                sendMessage.setText("✍\uD83C\uDFFB Yoshingiz . .");
+            }
         }
         return sendMessage;
     }
@@ -97,7 +101,7 @@ public class AuthService {
             UserEntity entity = userRepository.findByTgId(tgId);
             entity.setAge(Byte.valueOf(text));
             userRepository.save(entity);
-            sendMessage.setText("\uD83D\uDDFA Yashash manzilingiz . .");
+            sendMessage.setText("\uD83D\uDDFA Yashash manzilingiz : ...");
             sendMessage.setReplyMarkup(InlineKeyBoardUtil.regionsButtons());
         } else {
             sendMessage.setText("⚠\uFE0F Yoshingizni to'g'ri kiriting . .");
@@ -118,15 +122,20 @@ public class AuthService {
         /** button dan kelgan viloyatni set qilish va buttonni editMsg qilib tasdiqlashsni so'rash */
         UserEntity entity = userRepository.findByTgId(callBackData.getFrom().getId());
         entity.setAddress(callBackData.getData());
-        entity.setStep(UserStep.ACCEPTING_NEW_USER);
+        entity.setStep(UserStep.END);
+        entity.setStatus(GeneralStatus.ACTIVE);
         userRepository.save(entity);
         /** viloyatlar buttonni editMsg qilish */
         UserDTO dto = getById(callBackData.getFrom().getId()); // user ni get qilish
         EditMessageText editMessageText = new EditMessageText();// editMsg object olish
         editMessageText.setMessageId(callBackData.getMessage().getMessageId());
-        editMessageText.setText("\uD83D\uDC64 Ma'lumotlaringiz.\n" + "\uD83D\uDD36 Foydalanuvchi ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\n\uD83D\uDCCB Ushbu ma'lumotlarni tasdiqlaysizmi ?");
+        editMessageText.setText("Foydalanuvchi ID : " + dto.getBotId() + "\n\uD83D\uDD37 Ism : " + dto.getName() + "\n" + "\uD83D\uDD36 Yosh : " + dto.getAge() + "\n\uD83D\uDD37 Manzil : " + dto.getAddress() + "\n\n✅ Ma'lumotlaringiz muvafaqqiyatli kiritildi.");
         editMessageText.setChatId(dto.getTgId());
-        editMessageText.setReplyMarkup(InlineKeyBoardUtil.acceptingButtons());//editMsg ga tasdiqlash button ni set qilish
+        /**  set created_date of user */
+        String createdDate = String.valueOf(LocalDateTime.now());
+        String s = createdDate.substring(0, 10) + " " + createdDate.substring(11, 16);
+        dto.setCreatedDate(s);
+        userService.update(dto);
         return editMessageText;
     }
 
